@@ -1,0 +1,7 @@
+name: platform-paper
+version: '1.0.0'
+main: com.zetaplugins.NetwatchZPaper
+api-version: '1.19'
+load: STARTUP
+description: Anti VPN, Geoblocking and IP tracking plugin 
+website: zetaplugins.com

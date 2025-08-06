@@ -1,6 +1,6 @@
 name: platform-spigot
 version: '1.0.0'
-main: com.zetaplugins.NetwatchZSpigot
+main: com.zetaplugins.netwatchz.spigot.NetwatchZSpigot
 api-version: '1.19'
 load: STARTUP
 description: Anti VPN, Geoblocking and IP tracking plugin 

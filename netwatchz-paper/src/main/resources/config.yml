@@ -1,0 +1,72 @@
+#
+#    _   _      _                 _       _       ______
+#   | \ | |    | |               | |     | |     |___  /
+#   |  \| | ___| |___      ____ _| |_ ___| |__      / /
+#   | . ` |/ _ \ __\ \ /\ / / _` | __/ __| '_ \    / /
+#   | |\  |  __/ |_ \ V  V / (_| | || (__| | | |  / /__
+#   |_| \_|\___|\__| \_/\_/ \__,_|\__\___|_| |_| /_____|
+#
+
+# Set the language to any code found in the "lang" folder (don't add the .yml extension)
+# You can add your own language files. Use https://github.com/ZetaPlugins/NetwatchZ/tree/main/src/main/resources/lang/en-US.yml as a template
+# If you want to help translating the plugin, please refer to this article: https://docs.zetaplugins.com/localization
+#  | en-US | de-DE |
+lang: "en-US"
+
+geo_blocking:
+  # Enable or disable geo-blocking.
+  enabled: false
+
+  # Wether or not the following list should be a blacklist or a whitelist.
+  # If set to true, the countries in the list will be blocked.
+  # If set to false, only the countries not in the list will be blocked.
+  blacklist: true
+
+  # Set the list of countries to block or allow.
+  # The format of the country code depends on the IP info provider, but usually it is a two-letter country code (ISO 3166-1 alpha-2).
+  # Example: ["US", "CA", "GB"]
+  countries: []
+
+ip_info_provider:
+  # Set the IP info provider to use.
+  # Possible values are:
+  # - "ip-api" (https://ip-api.com)
+  # - "ipwhois" (https://ipwhois.app)
+  # - "custom" (Uses the custom IP info provider defined below)
+  provider: "ip-api"
+
+  custom:
+    # Set the custom IP info provider URL. It should return a JSON response.
+    # Use %ip% as a placeholder for the IP address.
+    url: "https://api.example.com/json/%ip%"
+
+    # Set the custom IP info provider headers.
+    headers:
+      Authorization: "Bearer YOUR_API_KEY"
+
+    # Set the custom IP info provider query parameters.
+    parse_fields:
+      # Keys are the data needed. Values are the json keys in the response.
+      # If certain data is not provided by the API, you can leave it out.
+      country: "country"
+      countryCode: "countryCode"
+      regionName: "regionName"
+      region: "region"
+      city: "city"
+      lat: "latitude"
+      lon: "longitude"
+      timezone: "timezone"
+      isp: "isp"
+      org: "organization"
+      asn: "asn"
+      ip: "ip"
+
+
+datetime:
+  # Set the date and time format to use in the UI.
+  # Use https://momentjs.com/docs/#/displaying/format/ for reference
+  date_format: "YYYY-MM-DD"
+  time_format: "HH:mm:ss"
+
+  # Set the timezone to use in the UI. Use https://en.wikipedia.org/wiki/List_of_tz_database_time_zones for reference
+  timezone: "Europe/Berlin"

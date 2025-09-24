@@ -43,6 +43,8 @@ ip_info_provider:
     city_url: "https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-City&license_key=YOUR_KEY&suffix=tar.gz"
     country_url: "https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-Country&license_key=YOUR_KEY&suffix=tar.gz"
 
+    # Attribution: This product includes GeoLite2 data created by MaxMind, available from https://www.maxmind.com
+
   custom:
     # Set the custom IP info provider URL. It should return a JSON response.
     # Use %ip% as a placeholder for the IP address.

@@ -32,7 +32,7 @@ import java.util.logging.Logger;
  *
  * Supports both direct .mmdb URLs and .tar.gz URLs (official MaxMind endpoints).
  */
-public class GeoLite2Fetcher extends IpDataFetcher {
+public final class GeoLite2Fetcher extends IpDataFetcher {
     private final Logger logger;
 
     private static final String ASN_MMDB = "GeoLite2-ASN.mmdb";

@@ -44,14 +44,14 @@ public class IpInfoCommand implements CommandExecutor, TabCompleter {
             return false;
         }
 
-        String playerIp = player.getAddress() != null ? player.getAddress().getAddress().getHostAddress() : "Unknown IP";
+        String playerIp = player.getAddress() != null ? NetwatchZPaper.getIpFromInetAdress(player.getAddress().getAddress()) : "Unknown IP";
 
         IpData ipData = plugin.getIpDataFetcher().fetchIpData(playerIp);
         if (ipData == null) {
             sender.sendMessage(plugin.getMessageService().getAndFormatMsg(
                     false,
                     "ip_data_fetch_error",
-                    "&cFailed to fetch IP data for player: %player%",
+                    "&cFailed to fetch IP data for player %player%!",
                     new MessageService.Replaceable<>("%player%", playerName)
             ));
             return false;

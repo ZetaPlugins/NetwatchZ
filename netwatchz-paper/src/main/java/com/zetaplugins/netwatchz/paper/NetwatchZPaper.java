@@ -1,13 +1,9 @@
 package com.zetaplugins.netwatchz.paper;
 
-import com.zetaplugins.netwatchz.common.ipapi.fetchers.CustomIpDataFetcher;
+import com.zetaplugins.netwatchz.common.ipapi.fetchers.*;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.zetaplugins.netwatchz.common.ipapi.IpData;
-import com.zetaplugins.netwatchz.common.ipapi.fetchers.IpApiCom;
-import com.zetaplugins.netwatchz.common.ipapi.fetchers.IpDataFetcher;
-import com.zetaplugins.netwatchz.common.ipapi.fetchers.IpWhois;
-import com.zetaplugins.netwatchz.paper.listeners.AsyncPlayerPreLoginListener;
 import com.zetaplugins.netwatchz.paper.util.CommandManager;
 import com.zetaplugins.netwatchz.paper.util.EventManager;
 import com.zetaplugins.zetacore.services.LocalizationService;
@@ -16,6 +12,9 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
+import java.net.InetAddress;
+import java.net.URL;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
@@ -59,6 +58,7 @@ public final class NetwatchZPaper extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (ipDataFetcher != null) ipDataFetcher.onShutDown();
         getLogger().info("NetwatchZPaper has been disabled!");
     }
 
@@ -69,12 +69,54 @@ public final class NetwatchZPaper extends JavaPlugin {
                 .build();
     }
 
+    public static String getIpFromInetAdress(InetAddress addr) {
+        return "146.70.231.4";
+        //return addr.getHostAddress();
+    }
+
+    private static boolean isValidUrl(String url) {
+        try {
+            new URL(url).toURI();
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     private IpDataFetcher createIpDataFetcher(FileConfiguration config) {
         switch (config.getString("ip_info_provider.provider", "ip-api.com")) {
             case "ip-api":
                 return new IpApiCom(createCache());
             case "ipwhois":
                 return new IpWhois(createCache());
+            case "geolite2":
+                String asnUrl = config.getString("ip_info_provider.geolite2.asn_url", "");
+                if (!asnUrl.isEmpty() && !isValidUrl(asnUrl)) {
+                    getLogger().warning("Invalid GeoLite2 ASN URL in config, defaulting to ip-api.com");
+                    return new IpApiCom(createCache());
+                }
+
+                String cityUrl = config.getString("ip_info_provider.geolite2.city_url", "");
+                if (!cityUrl.isEmpty() && !isValidUrl(cityUrl)) {
+                    getLogger().warning("Invalid GeoLite2 City URL in config, defaulting to ip-api.com");
+                    return new IpApiCom(createCache());
+                }
+
+                String countryUrl = config.getString("ip_info_provider.geolite2.country_url", "");
+                if (!countryUrl.isEmpty() && !isValidUrl(countryUrl)) {
+                    getLogger().warning("Invalid GeoLite2 Country URL in config, defaulting to ip-api.com");
+                    return new IpApiCom(createCache());
+                }
+
+                return new GeoLite2Fetcher(
+                        getLogger(),
+                        createCache(),
+                        getDataFolder().toPath().resolve("GeoLite2"),
+                        Duration.ofDays(7),
+                        asnUrl,
+                        cityUrl,
+                        countryUrl
+                );
             case "custom":
                 String apiUrl = config.getString("ip_info_provider.custom.url", "http://ip-api.com/json/%ip%");
 

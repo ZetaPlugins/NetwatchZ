@@ -35,6 +35,14 @@ ip_info_provider:
   # - "custom" (Uses the custom IP info provider defined below)
   provider: "ip-api"
 
+  geolite2:
+    # Set the urls to the GeoLite2 databases.
+    # These can be links to tar.gz files of the official MaxMind GeoLite2 databases with your license key included or links to your own hosted databases (downloading .mmdb files directly is also supported).
+    # You can get a free license key by creating an account on https://www.maxmind.com/en/geolite2/signup
+    asn_url: "https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-ASN&license_key=YOUR_KEY&suffix=tar.gz"
+    city_url: "https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-City&license_key=YOUR_KEY&suffix=tar.gz"
+    country_url: "https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-Country&license_key=YOUR_KEY&suffix=tar.gz"
+
   custom:
     # Set the custom IP info provider URL. It should return a JSON response.
     # Use %ip% as a placeholder for the IP address.

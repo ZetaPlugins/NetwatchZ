@@ -1,5 +1,5 @@
 geoblock_ban_message: "&cYour IP address has been blocked due to suspicious activity!<br><br>&7If you believe this is an error, please contact support."
 usage_error: "&cUsage: %usage%"
 player_not_found: "&cPlayer not found!"
-ip_data_fetch_error: "&cCould not fetch IP data for &player&!"
+ip_data_fetch_error: "&cCould not fetch IP data for %player%!"
 ip_info: "<br>&8--- <#FF6F00>&lIP Information &r&8---<br><br><#FF6F00>Player: &7%player%<br><#FF6F00>IP: &7%ip%<br><#FF6F00>Country: &7%country%<br><#FF6F00>Region: &7%region%<br><#FF6F00>ISP: &7%isp%<br><#FF6F00>Organization: &7%org%<br><#FF6F00>ASN: &7%asn%<br><br>&8----------------------<br>"

@@ -105,4 +105,9 @@ public abstract class IpDataFetcher {
         return fetchFromApi(url, null);
     }
 
+    /**
+     * Called when the application is shutting down.
+     * Can be overridden by subclasses to perform cleanup tasks.
+     */
+    public void onShutDown() {}
 }

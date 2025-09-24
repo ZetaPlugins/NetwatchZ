@@ -18,7 +18,7 @@ public final class AsyncPlayerPreLoginListener implements Listener {
     @EventHandler
     public void onAsyncPlayerPreLogin(AsyncPlayerPreLoginEvent event) {
         String playerName = event.getName();
-        String playerIp = event.getAddress().getHostAddress();
+        String playerIp = NetwatchZPaper.getIpFromInetAdress(event.getAddress());
 
         IpData ipData = plugin.getIpDataFetcher().fetchIpData(playerIp);
 
@@ -31,14 +31,24 @@ public final class AsyncPlayerPreLoginListener implements Listener {
         //plugin.getLogger().info("IP Data: " + ipData);
 
         boolean enableGeoBlocking = plugin.getConfig().getBoolean("geo_blocking.enabled", true);
-        if (!enableGeoBlocking) return;
+        if (enableGeoBlocking && handleGeoBlocking(ipData, playerName, playerIp, event)) return;
+    }
 
+    /**
+     * Handles geo-blocking based on the provided IP data and configuration.
+     * @param ipData the IP data of the player
+     * @param playerName the name of the player
+     * @param playerIp the IP address of the player
+     * @param event the AsyncPlayerPreLoginEvent
+     * @return true if the player is blocked, false otherwise
+     */
+    private boolean handleGeoBlocking(IpData ipData, String playerName, String playerIp, AsyncPlayerPreLoginEvent event) {
         // If true -> blacklist, if false -> whitelist
         boolean blackList = plugin.getConfig().getBoolean("geo_blocking.blacklist", true);
         List<String> countryList = plugin.getConfig().getStringList("geo_blocking.countries");
 
         if (blackList && countryList.contains(ipData.countryCode()) || !blackList && !countryList.contains(ipData.countryCode())) {
-            plugin.getLogger().warning("Player " + playerName + " with IP: " + playerIp + " is blocked due to country: " + ipData.countryCode());
+            plugin.getLogger().warning("Player " + playerName + " with IP: " + playerIp + " was blocked due to country: " + ipData.countryCode());
             event.disallow(
                     AsyncPlayerPreLoginEvent.Result.KICK_BANNED,
                     plugin.getMessageService().getAndFormatMsg(
@@ -47,6 +57,9 @@ public final class AsyncPlayerPreLoginListener implements Listener {
                             "&cYour IP address has been blocked due to suspicious activity!<br><br>&7If you believe this is an error, please contact support."
                     )
             );
+            return true;
         }
+
+        return false;
     }
 }

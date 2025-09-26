@@ -1,30 +1,27 @@
 package com.zetaplugins.netwatchz.paper;
 
+import com.zetaplugins.netwatchz.common.config.CustomProviderConfig;
+import com.zetaplugins.netwatchz.common.config.GeoLite2Config;
+import com.zetaplugins.netwatchz.common.config.IpInfoProviderConfig;
+import com.zetaplugins.netwatchz.common.config.IpListConfig;
 import com.zetaplugins.netwatchz.common.ipapi.fetchers.*;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.zetaplugins.netwatchz.common.ipapi.IpData;
-import com.zetaplugins.netwatchz.common.iplist.IpListFetchJob;
 import com.zetaplugins.netwatchz.common.iplist.IpListFetcher;
 import com.zetaplugins.netwatchz.common.iplist.IpListService;
 import com.zetaplugins.netwatchz.paper.util.CommandManager;
+import com.zetaplugins.netwatchz.paper.util.PaperConfigManager;
 import com.zetaplugins.netwatchz.paper.util.EventManager;
 import com.zetaplugins.netwatchz.paper.util.Metrics;
 import com.zetaplugins.zetacore.services.LocalizationService;
 import com.zetaplugins.zetacore.services.MessageService;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.net.InetAddress;
-import java.net.URL;
-import java.nio.file.Path;
-import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -41,9 +38,14 @@ public final class NetwatchZPaper extends JavaPlugin {
         getConfig().options().copyDefaults(true);
         saveConfig();
 
-        ipDataFetcher = createIpDataFetcher(getConfig());
-        ipListFetcher = createIpListFetcher(getConfig());
-        ipListService = createIpListService(getConfig());
+        var configManager = new PaperConfigManager(this);
+
+        IpInfoProviderConfig ipInfoCfg = configManager.loadIpInfoProviderConfig();
+        IpListConfig ipListCfg = configManager.loadIpListConfig();
+
+        ipDataFetcher = createIpDataFetcher(ipInfoCfg);
+        ipListFetcher = createIpListFetcher(ipListCfg);
+        ipListService = createIpListService(ipListCfg);
         localizationService = new LocalizationService(this, new ArrayList<>() {{
             add("en-US");
             add("de-DE");
@@ -96,123 +98,40 @@ public final class NetwatchZPaper extends JavaPlugin {
         //return addr.getHostAddress();
     }
 
-    private static boolean isValidUrl(String url) {
-        try {
-            new URL(url).toURI();
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
+    private IpListService createIpListService(IpListConfig cfg) {
+        return new IpListService(cfg.listNames().stream()
+                .map(cfg.ipListsDir()::resolve)
+                .collect(Collectors.toList()),
+                getLogger());
     }
 
-    private IpListService createIpListService(FileConfiguration config) {
-        Path ipListsDir = getDataFolder().toPath().resolve("ipLists");
-        if (!ipListsDir.toFile().exists() && !ipListsDir.toFile().mkdirs()) {
-            getLogger().warning("Failed to create ipLists directory at " + ipListsDir);
-        }
-
-        Set<String> listNames = config.getStringList("ip_list.lists").stream()
-                .map(String::trim)
-                .filter(s -> !s.isEmpty())
-                .collect(Collectors.toSet());
-
-        return new IpListService(
-                listNames.stream()
-                        .map(ipListsDir::resolve)
-                        .collect(Collectors.toList()),
-                getLogger()
-        );
-    }
-
-    private IpListFetcher createIpListFetcher(FileConfiguration config) {
-        Path ipListsDir = getDataFolder().toPath().resolve("ipLists");
-        if (!ipListsDir.toFile().exists() && !ipListsDir.toFile().mkdirs()) {
-            getLogger().warning("Failed to create ipLists directory at " + ipListsDir);
-        }
-
-        var jobs = config.getConfigurationSection("ip_list.fetch_jobs") != null ?
-                config.getConfigurationSection("ip_list.fetch_jobs").getKeys(false) : Set.<String>of();
-        var fetchJobs = jobs.stream()
-                .map(jobKey -> {
-                    String url = config.getString("ip_list.fetch_jobs." + jobKey + ".url", "").trim();
-                    String filename = config.getString("ip_list.fetch_jobs." + jobKey + ".filename", "").trim();
-                    int intervalHours = Math.max(1, config.getInt("ip_list.fetch_jobs." + jobKey + ".update_interval_hours", 24));
-
-                    if (url.isEmpty() || filename.isEmpty()) {
-                        getLogger().warning("Invalid fetch job '" + jobKey + "' in config, missing url or filename");
-                        return null;
-                    }
-
-                    return new IpListFetchJob(
-                            url,
-                            ipListsDir.resolve(filename),
-                            Duration.ofHours(intervalHours)
-                    );
-                })
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
-
+    private IpListFetcher createIpListFetcher(IpListConfig cfg) {
         var fetcher = new IpListFetcher(getLogger());
-        if (!fetchJobs.isEmpty()) fetcher.start(fetchJobs);
+        if (!cfg.fetchJobs().isEmpty()) fetcher.start(cfg.fetchJobs());
         return fetcher;
     }
 
-    private IpDataFetcher createIpDataFetcher(FileConfiguration config) {
-        switch (config.getString("ip_info_provider.provider", "ip-api.com")) {
-            case "ip-api":
-                return new IpApiCom(createCache());
-            case "ipwhois":
+    private IpDataFetcher createIpDataFetcher(IpInfoProviderConfig cfg) {
+        switch (cfg.provider()) {
+            case IPWHOIS:
                 return new IpWhois(createCache());
-            case "geolite2":
-                String asnUrl = config.getString("ip_info_provider.geolite2.asn_url", "");
-                if (!asnUrl.isEmpty() && !isValidUrl(asnUrl)) {
-                    getLogger().warning("Invalid GeoLite2 ASN URL in config, defaulting to ip-api.com");
-                    return new IpApiCom(createCache());
-                }
-
-                String cityUrl = config.getString("ip_info_provider.geolite2.city_url", "");
-                if (!cityUrl.isEmpty() && !isValidUrl(cityUrl)) {
-                    getLogger().warning("Invalid GeoLite2 City URL in config, defaulting to ip-api.com");
-                    return new IpApiCom(createCache());
-                }
-
-                String countryUrl = config.getString("ip_info_provider.geolite2.country_url", "");
-                if (!countryUrl.isEmpty() && !isValidUrl(countryUrl)) {
-                    getLogger().warning("Invalid GeoLite2 Country URL in config, defaulting to ip-api.com");
-                    return new IpApiCom(createCache());
-                }
-
+            case GEOLITE2:
+                GeoLite2Config g = cfg.geoLite2();
+                if (g == null) return new IpApiCom(createCache());
                 return new GeoLite2Fetcher(
                         getLogger(),
                         createCache(),
-                        getDataFolder().toPath().resolve("GeoLite2"),
-                        Duration.ofDays(7),
-                        asnUrl,
-                        cityUrl,
-                        countryUrl
+                        g.storageDir(),
+                        g.updateIntervalDays(),
+                        g.asnUrl(),
+                        g.cityUrl(),
+                        g.countryUrl()
                 );
-            case "custom":
-                String apiUrl = config.getString("ip_info_provider.custom.url", "http://ip-api.com/json/%ip%");
-
-                Set<String> headersKeys = config.getConfigurationSection("ip_info_provider.custom.headers") != null ?
-                        config.getConfigurationSection("ip_info_provider.custom.headers").getKeys(false) : Set.of();
-                Map<String, String> headers = headersKeys.stream()
-                        .collect(Collectors.toMap(
-                                key -> key,
-                                key -> config.getString("ip_info_provider.custom.headers." + key, "")
-                        ));
-
-                Set<String> parseFieldsKeys = config.getConfigurationSection("ip_info_provider.custom.parse_fields") != null ?
-                        config.getConfigurationSection("ip_info_provider.custom.parse_fields").getKeys(false) : Set.of();
-                Map<String, String> parseFields = parseFieldsKeys.stream()
-                        .collect(Collectors.toMap(
-                                key -> key,
-                                key -> config.getString("ip_info_provider.custom.parse_fields." + key, "")
-                        ));
-
-                return new CustomIpDataFetcher(createCache(), apiUrl, headers, parseFields);
+            case CUSTOM:
+                CustomProviderConfig c = cfg.custom();
+                if (c == null) return new IpApiCom(createCache());
+                return new CustomIpDataFetcher(createCache(), c.apiUrl(), c.headers(), c.parseFields());
             default:
-                getLogger().warning("Unknown IP API fetcher specified in config, defaulting to ip-api.com");
                 return new IpApiCom(createCache());
         }
     }

@@ -3,11 +3,14 @@ package com.zetaplugins.netwatchz.paper.listeners;
 import com.zetaplugins.netwatchz.common.ipapi.IpData;
 import com.zetaplugins.netwatchz.paper.NetwatchZPaper;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 
 import java.util.List;
+import java.util.UUID;
 
 public final class AsyncPlayerPreLoginListener implements Listener {
     private final NetwatchZPaper plugin;
@@ -20,6 +23,13 @@ public final class AsyncPlayerPreLoginListener implements Listener {
     public void onAsyncPlayerPreLogin(AsyncPlayerPreLoginEvent event) {
         String playerName = event.getName();
         String playerIp = NetwatchZPaper.getIpFromInetAdress(event.getAddress());
+
+        boolean bypassOp = plugin.getConfig().getBoolean("always_allow_ops", true);
+        if (bypassOp) {
+            UUID playerUuid = event.getUniqueId();
+            OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(playerUuid);
+            if (offlinePlayer.isOp()) return;
+        }
 
         IpData ipData = plugin.getIpDataFetcher().fetchIpData(playerIp);
 

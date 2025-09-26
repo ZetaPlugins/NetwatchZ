@@ -13,6 +13,10 @@
 #  | en-US | de-DE |
 lang: "en-US"
 
+# If set to true, OP players will always be allowed to join
+# You can also assign the "netwatchz.bypass" permission to players or groups to always allow them
+always_allow_ops: true
+
 ip_list:
   # Enable or disable the IP list feature.
   enabled: true

@@ -15,6 +15,9 @@ permissions:
   netwatchz.ipinfo:
     description: Allows the player to use the /ipinfo command
     default: op
+  netwatchz.bypass:
+    description: Allows the player to bypass all checks
+    default: op
   netwatchz.admin.debug:
     description: Allows the player to generate debug reports
     default: op

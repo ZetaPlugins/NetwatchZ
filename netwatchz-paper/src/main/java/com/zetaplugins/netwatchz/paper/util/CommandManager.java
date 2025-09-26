@@ -34,7 +34,6 @@ public final class CommandManager {
         if (command != null) {
             command.setExecutor(executor);
             command.setTabCompleter(tabCompleter);
-            command.permissionMessage(plugin.getMessageService().getAndFormatMsg(false, "noPermsError", "<red>You do not have permission to execute this command!"));
         }
     }
 }

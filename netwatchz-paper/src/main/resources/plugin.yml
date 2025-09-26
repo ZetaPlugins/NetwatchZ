@@ -1,7 +1,7 @@
 name: NetwatchZ
 version: '1.0.0'
 main: com.zetaplugins.netwatchz.paper.NetwatchZPaper
-api-version: '1.19'
+api-version: '1.17'
 load: STARTUP
 description: Anti VPN, Geoblocking and IP tracking plugin 
 website: zetaplugins.com
@@ -14,4 +14,7 @@ commands:
 permissions:
   netwatchz.ipinfo:
     description: Allows the player to use the /ipinfo command
+    default: op
+  netwatchz.admin.debug:
+    description: Allows the player to generate debug reports
     default: op

@@ -15,6 +15,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.net.InetAddress;
 import java.net.URL;
 import java.nio.file.Path;
@@ -211,5 +212,9 @@ public final class NetwatchZPaper extends JavaPlugin {
                 getLogger().warning("Unknown IP API fetcher specified in config, defaulting to ip-api.com");
                 return new IpApiCom(createCache());
         }
+    }
+
+    public File getPluginFile() {
+        return getFile();
     }
 }

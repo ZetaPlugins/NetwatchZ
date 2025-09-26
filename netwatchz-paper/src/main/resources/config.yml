@@ -13,6 +13,38 @@
 #  | en-US | de-DE |
 lang: "en-US"
 
+ip_list:
+  # Enable or disable the IP list feature.
+  enabled: true
+
+  # If the mode is "blacklist", the IPs in the lists will be blocked.
+  # If the mode is "whitelist", only the IPs in the lists will be allowed.
+  mode: "blacklist"
+
+  # Set the list of IPs or CIDR ranges to block or allow.
+  # These are files inside the "plugins/NetwatchZ/ipLists" folder.
+  lists:
+    - "vpn_list.txt"
+    # - "another_list.txt"
+
+  fetch_jobs:
+    vpn_list:
+      # Set the URL to fetch the IP list from.
+      url: "https://raw.githubusercontent.com/X4BNet/lists_vpn/refs/heads/main/output/vpn/ipv4.txt"
+
+      # Set the filename to save the fetched list as. This file will be saved in the "plugins/NetwatchZ/ipLists" folder.
+      filename: "vpn_list.txt"
+
+      # Set how often the list should be fetched (in hours).
+      # The minimum is 1 hour.
+      update_interval_hours: 24
+
+    # You can add more fetch jobs here. e.g.
+    # another_list:
+    #   url: "https://example.com/another_list.txt"
+    #   filename: "another_list.txt"
+    #   update_interval_hours: 12
+
 geo_blocking:
   # Enable or disable geo-blocking.
   enabled: false

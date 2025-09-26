@@ -4,6 +4,9 @@ import com.zetaplugins.netwatchz.common.ipapi.fetchers.*;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.zetaplugins.netwatchz.common.ipapi.IpData;
+import com.zetaplugins.netwatchz.common.iplist.IpListFetchJob;
+import com.zetaplugins.netwatchz.common.iplist.IpListFetcher;
+import com.zetaplugins.netwatchz.common.iplist.IpListService;
 import com.zetaplugins.netwatchz.paper.util.CommandManager;
 import com.zetaplugins.netwatchz.paper.util.EventManager;
 import com.zetaplugins.zetacore.services.LocalizationService;
@@ -14,9 +17,11 @@ import org.jetbrains.annotations.NotNull;
 
 import java.net.InetAddress;
 import java.net.URL;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -25,13 +30,18 @@ public final class NetwatchZPaper extends JavaPlugin {
     private IpDataFetcher ipDataFetcher;
     private LocalizationService localizationService;
     private MessageService messageService;
+    private IpListService ipListService;
+    private IpListFetcher ipListFetcher;
 
     @Override
     public void onEnable() {
-        getConfig().options().copyDefaults(true);
         saveDefaultConfig();
+        getConfig().options().copyDefaults(true);
+        saveConfig();
 
         ipDataFetcher = createIpDataFetcher(getConfig());
+        ipListFetcher = createIpListFetcher(getConfig());
+        ipListService = createIpListService(getConfig());
         localizationService = new LocalizationService(this, new ArrayList<>() {{
             add("en-US");
             add("de-DE");
@@ -46,6 +56,14 @@ public final class NetwatchZPaper extends JavaPlugin {
 
     public IpDataFetcher getIpDataFetcher() {
         return ipDataFetcher;
+    }
+
+    public IpListService getIpListService() {
+        return ipListService;
+    }
+
+    public IpListFetcher getIpListFetcher() {
+        return ipListFetcher;
     }
 
     public LocalizationService getLocalizationService() {
@@ -81,6 +99,58 @@ public final class NetwatchZPaper extends JavaPlugin {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    private IpListService createIpListService(FileConfiguration config) {
+        Path ipListsDir = getDataFolder().toPath().resolve("ipLists");
+        if (!ipListsDir.toFile().exists() && !ipListsDir.toFile().mkdirs()) {
+            getLogger().warning("Failed to create ipLists directory at " + ipListsDir);
+        }
+
+        Set<String> listNames = config.getStringList("ip_list.lists").stream()
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toSet());
+
+        return new IpListService(
+                listNames.stream()
+                        .map(ipListsDir::resolve)
+                        .collect(Collectors.toList()),
+                getLogger()
+        );
+    }
+
+    private IpListFetcher createIpListFetcher(FileConfiguration config) {
+        Path ipListsDir = getDataFolder().toPath().resolve("ipLists");
+        if (!ipListsDir.toFile().exists() && !ipListsDir.toFile().mkdirs()) {
+            getLogger().warning("Failed to create ipLists directory at " + ipListsDir);
+        }
+
+        var jobs = config.getConfigurationSection("ip_list.fetch_jobs") != null ?
+                config.getConfigurationSection("ip_list.fetch_jobs").getKeys(false) : Set.<String>of();
+        var fetchJobs = jobs.stream()
+                .map(jobKey -> {
+                    String url = config.getString("ip_list.fetch_jobs." + jobKey + ".url", "").trim();
+                    String filename = config.getString("ip_list.fetch_jobs." + jobKey + ".filename", "").trim();
+                    int intervalHours = Math.max(1, config.getInt("ip_list.fetch_jobs." + jobKey + ".update_interval_hours", 24));
+
+                    if (url.isEmpty() || filename.isEmpty()) {
+                        getLogger().warning("Invalid fetch job '" + jobKey + "' in config, missing url or filename");
+                        return null;
+                    }
+
+                    return new IpListFetchJob(
+                            url,
+                            ipListsDir.resolve(filename),
+                            Duration.ofHours(intervalHours)
+                    );
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        var fetcher = new IpListFetcher(getLogger());
+        if (!fetchJobs.isEmpty()) fetcher.start(fetchJobs);
+        return fetcher;
     }
 
     private IpDataFetcher createIpDataFetcher(FileConfiguration config) {

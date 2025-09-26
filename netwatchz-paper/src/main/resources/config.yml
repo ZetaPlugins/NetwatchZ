@@ -103,13 +103,3 @@ ip_info_provider:
       org: "organization"
       asn: "asn"
       ip: "ip"
-
-
-datetime:
-  # Set the date and time format to use in the UI.
-  # Use https://momentjs.com/docs/#/displaying/format/ for reference
-  date_format: "YYYY-MM-DD"
-  time_format: "HH:mm:ss"
-
-  # Set the timezone to use in the UI. Use https://en.wikipedia.org/wiki/List_of_tz_database_time_zones for reference
-  timezone: "Europe/Berlin"

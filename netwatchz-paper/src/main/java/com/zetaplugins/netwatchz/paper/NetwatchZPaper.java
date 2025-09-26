@@ -9,6 +9,7 @@ import com.zetaplugins.netwatchz.common.iplist.IpListFetcher;
 import com.zetaplugins.netwatchz.common.iplist.IpListService;
 import com.zetaplugins.netwatchz.paper.util.CommandManager;
 import com.zetaplugins.netwatchz.paper.util.EventManager;
+import com.zetaplugins.netwatchz.paper.util.Metrics;
 import com.zetaplugins.zetacore.services.LocalizationService;
 import com.zetaplugins.zetacore.services.MessageService;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -51,6 +52,8 @@ public final class NetwatchZPaper extends JavaPlugin {
 
         new EventManager(this).registerListeners();
         new CommandManager(this).registerCommands();
+
+        initializeBStats();
 
         getLogger().info("NetwatchZPaper has been enabled!");
     }
@@ -212,6 +215,15 @@ public final class NetwatchZPaper extends JavaPlugin {
                 getLogger().warning("Unknown IP API fetcher specified in config, defaulting to ip-api.com");
                 return new IpApiCom(createCache());
         }
+    }
+
+    private void initializeBStats() {
+        int pluginId = 27376;
+        Metrics metrics = new Metrics(this, pluginId);
+
+        metrics.addCustomChart(new Metrics.SimplePie("ip_info_provider", () -> getConfig().getString("ip_info_provider.provider")));
+        metrics.addCustomChart(new Metrics.SimplePie("geo_blocking_enabled", () -> getConfig().getBoolean("geo_blocking.enabled") ? "true" : "false"));
+        metrics.addCustomChart(new Metrics.SimplePie("ip_list_enabled", () -> getConfig().getBoolean("ip_list.enabled") ? "true" : "false"));
     }
 
     public File getPluginFile() {

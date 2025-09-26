@@ -28,7 +28,7 @@
       </plugin>
       <plugin>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>3.5.3</version>
+        <version>3.6.0</version>
         <executions>
           <execution>
             <phase>package</phase>
@@ -37,6 +37,19 @@
             </goals>
           </execution>
         </executions>
+        <configuration>
+          <artifactSet>
+            <includes>
+              <include>com.zetaplugins:zetacore</include>
+            </includes>
+          </artifactSet>
+          <transformers>
+            <transformer />
+            <transformer>
+              <mainClass>com.zetaplugins.netwatchz.paper.NetwatchZPaper</mainClass>
+            </transformer>
+          </transformers>
+        </configuration>
       </plugin>
     </plugins>
   </build>
@@ -45,12 +58,22 @@
       <id>papermc-repo</id>
       <url>https://repo.papermc.io/repository/maven-public/</url>
     </repository>
+    <repository>
+      <id>zetaplugins</id>
+      <url>https://maven.zetaplugins.com/</url>
+    </repository>
   </repositories>
   <dependencies>
     <dependency>
+      <groupId>com.zetaplugins.netwatchz</groupId>
+      <artifactId>common</artifactId>
+      <version>1.0.0</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
       <groupId>io.papermc.paper</groupId>
       <artifactId>paper-api</artifactId>
-      <version>1.19.4-R0.1-SNAPSHOT</version>
+      <version>1.17-R0.1-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>

@@ -1,13 +1,11 @@
 package com.zetaplugins.netwatchz.paper;
 
+import com.zetaplugins.netwatchz.common.CacheUtils;
 import com.zetaplugins.netwatchz.common.config.CustomProviderConfig;
 import com.zetaplugins.netwatchz.common.config.GeoLite2Config;
 import com.zetaplugins.netwatchz.common.config.IpInfoProviderConfig;
 import com.zetaplugins.netwatchz.common.config.IpListConfig;
 import com.zetaplugins.netwatchz.common.ipapi.fetchers.*;
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
-import com.zetaplugins.netwatchz.common.ipapi.IpData;
 import com.zetaplugins.netwatchz.common.iplist.IpListFetcher;
 import com.zetaplugins.netwatchz.common.iplist.IpListService;
 import com.zetaplugins.netwatchz.paper.util.CommandManager;
@@ -17,12 +15,10 @@ import com.zetaplugins.netwatchz.paper.util.Metrics;
 import com.zetaplugins.zetacore.services.LocalizationService;
 import com.zetaplugins.zetacore.services.MessageService;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.net.InetAddress;
 import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public final class NetwatchZPaper extends JavaPlugin {
@@ -86,13 +82,6 @@ public final class NetwatchZPaper extends JavaPlugin {
         getLogger().info("NetwatchZPaper has been disabled!");
     }
 
-    private Cache<@NotNull String, IpData> createCache() {
-        return Caffeine.newBuilder()
-                .expireAfterWrite(1, TimeUnit.HOURS)
-                .maximumSize(1000)
-                .build();
-    }
-
     public static String getIpFromInetAdress(InetAddress addr) {
         return "146.70.231.4";
         //return addr.getHostAddress();
@@ -114,13 +103,13 @@ public final class NetwatchZPaper extends JavaPlugin {
     private IpDataFetcher createIpDataFetcher(IpInfoProviderConfig cfg) {
         switch (cfg.provider()) {
             case IPWHOIS:
-                return new IpWhois(createCache());
+                return new IpWhois(CacheUtils.createIpApiCache());
             case GEOLITE2:
                 GeoLite2Config g = cfg.geoLite2();
-                if (g == null) return new IpApiCom(createCache());
+                if (g == null) return new IpApiCom(CacheUtils.createIpApiCache());
                 return new GeoLite2Fetcher(
                         getLogger(),
-                        createCache(),
+                        CacheUtils.createIpApiCache(),
                         g.storageDir(),
                         g.updateIntervalDays(),
                         g.asnUrl(),
@@ -129,10 +118,10 @@ public final class NetwatchZPaper extends JavaPlugin {
                 );
             case CUSTOM:
                 CustomProviderConfig c = cfg.custom();
-                if (c == null) return new IpApiCom(createCache());
-                return new CustomIpDataFetcher(createCache(), c.apiUrl(), c.headers(), c.parseFields());
+                if (c == null) return new IpApiCom(CacheUtils.createIpApiCache());
+                return new CustomIpDataFetcher(CacheUtils.createIpApiCache(), c.apiUrl(), c.headers(), c.parseFields());
             default:
-                return new IpApiCom(createCache());
+                return new IpApiCom(CacheUtils.createIpApiCache());
         }
     }
 

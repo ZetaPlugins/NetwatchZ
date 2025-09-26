@@ -18,6 +18,43 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.6.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals><goal>shade</goal></goals>
+                        <configuration>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <relocations>
+                                <relocation>
+                                    <pattern>com.maxmind</pattern>
+                                    <shadedPattern>com.zetaplugins.shadow.com.maxmind</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.apache.commons.compress</pattern>
+                                    <shadedPattern>com.zetaplugins.shadow.org.apache.commons.compress</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.github.benmanes.caffeine</pattern>
+                                    <shadedPattern>com.zetaplugins.shadow.com.github.benmanes.caffeine</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.googlecode.json</pattern>
+                                    <shadedPattern>com.zetaplugins.shadow.com.googlecode.json</shadedPattern>
+                                </relocation>
+                            </relocations>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
     <dependencies>
         <dependency>
             <groupId>com.maxmind.geoip2</groupId>

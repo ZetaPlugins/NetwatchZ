@@ -1,6 +1,7 @@
 package com.zetaplugins.netwatchz.paper.listeners;
 
 import com.zetaplugins.netwatchz.common.ipapi.IpData;
+import com.zetaplugins.netwatchz.common.vpnblock.VpnInfoData;
 import com.zetaplugins.netwatchz.paper.NetwatchZPaper;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
@@ -31,21 +32,28 @@ public final class AsyncPlayerPreLoginListener implements Listener {
             if (offlinePlayer.isOp()) return;
         }
 
-        IpData ipData = plugin.getIpDataFetcher().fetchIpData(playerIp);
-
-        if (ipData == null) {
-            plugin.getLogger().warning("Failed to fetch IP data for player " + playerName + " with IP: " + playerIp);
-            return;
-        }
-
         boolean ipListEnabled = plugin.getConfig().getBoolean("ip_list.enabled", true);
         if (ipListEnabled && handleIpListBlocking(playerName, playerIp, event)) return;
 
-        //plugin.getLogger().info("Player " + playerName + " is attempting to log in from IP: " + playerIp);
-        //plugin.getLogger().info("IP Data: " + ipData);
-
         boolean enableGeoBlocking = plugin.getConfig().getBoolean("geo_blocking.enabled", true);
-        if (enableGeoBlocking && handleGeoBlocking(ipData, playerName, playerIp, event)) return;
+        if (enableGeoBlocking) {
+            IpData ipData = plugin.getIpDataFetcher().fetchIpData(playerIp);
+            if (ipData == null) {
+                plugin.getLogger().warning("Failed to fetch IP data for player " + playerName + " with IP: " + playerIp);
+                return;
+            }
+            if (handleGeoBlocking(ipData, playerName, playerIp, event)) return;
+        }
+
+        boolean enableVpnBlocking = plugin.getConfig().getBoolean("vpn_block.enabled", true);
+        if (enableVpnBlocking) {
+            VpnInfoData vpnInfoData = plugin.getVpnInfoProvider().fetchVpnData(playerIp);
+            if (vpnInfoData == null) {
+                plugin.getLogger().warning("Failed to fetch VPN info for player " + playerName + " with IP: " + playerIp);
+                return;
+            }
+            if (handleVpnBlocking(vpnInfoData, playerName, playerIp, event)) return;
+        }
     }
 
     /**
@@ -115,5 +123,32 @@ public final class AsyncPlayerPreLoginListener implements Listener {
                 "iplist_ban_message",
                 "&cYour IP address has been blocked due to suspicious activity!<br><br>&7If you believe this is an error, please contact support."
         );
+    }
+
+    private boolean handleVpnBlocking(VpnInfoData ipData, String playerName, String playerIp, AsyncPlayerPreLoginEvent event) {
+        boolean blockVpn = plugin.getConfig().getBoolean("vpn_block.is_vpn.block", true);
+        boolean blockProxy = plugin.getConfig().getBoolean("vpn_block.is_proxy.block", false);
+        boolean blockTor = plugin.getConfig().getBoolean("vpn_block.is_tor.block", true);
+        boolean blockRelay = plugin.getConfig().getBoolean("vpn_block.is_relay.block", false);
+        boolean blockHosting = plugin.getConfig().getBoolean("vpn_block.is_hosting.block", false);
+
+        if ((blockVpn && ipData.isVpn()) ||
+                (blockProxy && ipData.isProxy()) ||
+                (blockTor && ipData.isTor()) ||
+                (blockRelay && ipData.isRelay()) ||
+                (blockHosting && ipData.isHosting())) {
+            plugin.getLogger().info("Player " + playerName + " with IP: " + playerIp + " was blocked due to VPN/Proxy/Tor/Relay/Hosting usage.");
+            event.disallow(
+                    AsyncPlayerPreLoginEvent.Result.KICK_BANNED,
+                    plugin.getMessageService().getAndFormatMsg(
+                            false,
+                            "vpnblock_ban_message",
+                            "&cYour IP address has been blocked due to suspicious activity!<br><br>&7If you believe this is an error, please contact support."
+                    )
+            );
+            return true;
+        }
+
+        return false;
     }
 }

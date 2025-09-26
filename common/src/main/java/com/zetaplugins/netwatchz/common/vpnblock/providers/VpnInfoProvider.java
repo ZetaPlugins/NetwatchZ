@@ -1,8 +1,8 @@
-package com.zetaplugins.netwatchz.common.ipapi.fetchers;
+package com.zetaplugins.netwatchz.common.vpnblock.providers;
 
 import com.github.benmanes.caffeine.cache.Cache;
-import com.zetaplugins.netwatchz.common.ipapi.IpData;
 import com.zetaplugins.netwatchz.common.DataFetchException;
+import com.zetaplugins.netwatchz.common.vpnblock.VpnInfoData;
 import org.jetbrains.annotations.NotNull;
 import org.json.simple.parser.ParseException;
 
@@ -13,30 +13,26 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Map;
 
-/**
- * Abstract class for fetching IP data from various APIs.
- * This class provides a method to fetch data from a URL and parse the response.
- */
-public abstract class IpDataFetcher {
-    private final Cache<@NotNull String, IpData> cache;
+public abstract class VpnInfoProvider {
+    private final Cache<@NotNull String, VpnInfoData> cache;
 
-    public IpDataFetcher(Cache<@NotNull String, IpData> cache) {
+    public VpnInfoProvider(Cache<@NotNull String, VpnInfoData> cache) {
         this.cache = cache;
     }
 
-    protected Cache<@NotNull String, IpData> getCache() {
+    protected Cache<@NotNull String, VpnInfoData> getCache() {
         return cache;
     }
 
     protected abstract String getApiUrl();
 
     /**
-     * Fetches IP data for the given IP address.
+     * Fetches VPN data for the given IP address.
      * @param ip the IP address to fetch data for
      * @throws DataFetchException if an error occurs while fetching the data
-     * @return the IP data for the specified IP address
+     * @return the VPN data for the specified IP address
      */
-    public IpData fetchIpData(String ip) throws DataFetchException {
+    public VpnInfoData fetchVpnData(String ip) throws DataFetchException {
         if (ip == null || ip.isEmpty()) {
             throw new DataFetchException("IP address cannot be null or empty");
         }
@@ -46,27 +42,27 @@ public abstract class IpDataFetcher {
         }
 
         try {
-            URL url = new URL(getApiUrl() + ip);
+            URL url = new URL(getApiUrl().replace("%ip%", ip));
             String jsonResponse = fetchFromApi(url);
-            IpData data = parseIpData(jsonResponse);
+            VpnInfoData data = parseVpnData(jsonResponse);
             if (data == null) return null;
             getCache().put(ip, data);
             return data;
         } catch (Exception e) {
-            throw new DataFetchException("Failed to fetch IP data from " + getApiUrl() + ip, e);
+            throw new DataFetchException("Failed to fetch VPN data from " + getApiUrl() + ip, e);
         }
     }
 
     /**
-     * Parses the JSON response to create an IpData object.
+     * Parses the VPN data from the JSON response.
      * @param jsonResponse the JSON response from the API
      * @throws ParseException if an error occurs while parsing the JSON
-     * @return an IpData object containing the parsed data
+     * @return the parsed VPN data
      */
-    protected abstract IpData parseIpData(String jsonResponse) throws ParseException;
+    protected abstract VpnInfoData parseVpnData(String jsonResponse) throws ParseException;
 
     /**
-     * Fetches data from the specified URL.
+     * Fetches data from the specified URL with optional headers.
      * @param url the URL to fetch data from
      * @param headers optional headers to include in the request
      * @throws IOException if an error occurs while fetching the data
@@ -96,7 +92,7 @@ public abstract class IpDataFetcher {
     }
 
     /**
-     * Fetches data from the specified URL.
+     * Fetches data from the specified URL without additional headers.
      * @param url the URL to fetch data from
      * @throws IOException if an error occurs while fetching the data
      * @return the response as a String
@@ -104,10 +100,4 @@ public abstract class IpDataFetcher {
     protected String fetchFromApi(URL url) throws IOException {
         return fetchFromApi(url, null);
     }
-
-    /**
-     * Called when the application is shutting down.
-     * Can be overridden by subclasses to perform cleanup tasks.
-     */
-    public void onShutDown() {}
 }

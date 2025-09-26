@@ -99,4 +99,36 @@ public final class PaperConfigManager extends ConfigManager {
 
         return new IpListConfig(ipListsDir, jobs, listNames);
     }
+
+    @Override
+    public VpnBlockConfig loadVpnBlockConfig() {
+        boolean enabled = cfg.getBoolean("vpn_block.enabled", false);
+        String apiKey = cfg.getString("vpn_block.api_key", "").trim();
+
+        String raw = cfg.getString("vpn_block.provider", "vpnapi").trim().toLowerCase(Locale.ROOT);
+        VpnBlockConfig.Provider p = switch (raw) {
+            case "custom" -> VpnBlockConfig.Provider.CUSTOM;
+            case "proxycheck" -> VpnBlockConfig.Provider.PROXYCHECK;
+            default -> VpnBlockConfig.Provider.VPNAPI;
+        };
+
+        CustomProviderConfig custom = null;
+        if (p == VpnBlockConfig.Provider.CUSTOM) {
+            String apiUrl = cfg.getString("vpn_block.custom.url", "");
+            if (apiUrl.isBlank() || !isValidUrl(apiUrl)) {
+                plugin.getLogger().warning("Invalid VPN Block custom URL; defaulting to VPNAPI.");
+                p = VpnBlockConfig.Provider.VPNAPI;
+            } else {
+                ConfigurationSection sec = cfg.getConfigurationSection("vpn_block.custom.headers");
+                Map<String,String> headers = sec == null ? Map.of() :
+                        sec.getKeys(false).stream().collect(Collectors.toMap(k -> k, k -> sec.getString(k, "")));
+                ConfigurationSection parseSec = cfg.getConfigurationSection("vpn_block.custom.parse_fields");
+                Map<String,String> parseFields = parseSec == null ? Map.of() :
+                        parseSec.getKeys(false).stream().collect(Collectors.toMap(k -> k, k -> parseSec.getString(k, "")));
+                custom = new CustomProviderConfig(apiUrl, headers, parseFields);
+            }
+        }
+
+        return new VpnBlockConfig(enabled, p, apiKey, custom);
+    }
 }

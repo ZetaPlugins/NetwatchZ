@@ -1,13 +1,14 @@
 package com.zetaplugins.netwatchz.paper;
 
 import com.zetaplugins.netwatchz.common.CacheUtils;
-import com.zetaplugins.netwatchz.common.config.CustomProviderConfig;
-import com.zetaplugins.netwatchz.common.config.GeoLite2Config;
-import com.zetaplugins.netwatchz.common.config.IpInfoProviderConfig;
-import com.zetaplugins.netwatchz.common.config.IpListConfig;
+import com.zetaplugins.netwatchz.common.config.*;
 import com.zetaplugins.netwatchz.common.ipapi.fetchers.*;
 import com.zetaplugins.netwatchz.common.iplist.IpListFetcher;
 import com.zetaplugins.netwatchz.common.iplist.IpListService;
+import com.zetaplugins.netwatchz.common.vpnblock.providers.CustomVpnInfoProvider;
+import com.zetaplugins.netwatchz.common.vpnblock.providers.ProxyCheck;
+import com.zetaplugins.netwatchz.common.vpnblock.providers.VpnApi;
+import com.zetaplugins.netwatchz.common.vpnblock.providers.VpnInfoProvider;
 import com.zetaplugins.netwatchz.paper.util.CommandManager;
 import com.zetaplugins.netwatchz.paper.util.PaperConfigManager;
 import com.zetaplugins.netwatchz.paper.util.EventManager;
@@ -27,6 +28,7 @@ public final class NetwatchZPaper extends JavaPlugin {
     private MessageService messageService;
     private IpListService ipListService;
     private IpListFetcher ipListFetcher;
+    private VpnInfoProvider vpnInfoProvider;
 
     @Override
     public void onEnable() {
@@ -38,10 +40,12 @@ public final class NetwatchZPaper extends JavaPlugin {
 
         IpInfoProviderConfig ipInfoCfg = configManager.loadIpInfoProviderConfig();
         IpListConfig ipListCfg = configManager.loadIpListConfig();
+        VpnBlockConfig vpnBlockCfg = configManager.loadVpnBlockConfig();
 
         ipDataFetcher = createIpDataFetcher(ipInfoCfg);
         ipListFetcher = createIpListFetcher(ipListCfg);
         ipListService = createIpListService(ipListCfg);
+        vpnInfoProvider = createVpnInfoProvider(vpnBlockCfg);
         localizationService = new LocalizationService(this, new ArrayList<>() {{
             add("en-US");
             add("de-DE");
@@ -66,6 +70,10 @@ public final class NetwatchZPaper extends JavaPlugin {
 
     public IpListFetcher getIpListFetcher() {
         return ipListFetcher;
+    }
+
+    public VpnInfoProvider getVpnInfoProvider() {
+        return vpnInfoProvider;
     }
 
     public LocalizationService getLocalizationService() {
@@ -122,6 +130,19 @@ public final class NetwatchZPaper extends JavaPlugin {
                 return new CustomIpDataFetcher(CacheUtils.createIpApiCache(), c.apiUrl(), c.headers(), c.parseFields());
             default:
                 return new IpApiCom(CacheUtils.createIpApiCache());
+        }
+    }
+
+    private VpnInfoProvider createVpnInfoProvider(VpnBlockConfig cfg) {
+        switch (cfg.provider()) {
+            case PROXYCHECK:
+                return new ProxyCheck(CacheUtils.createVpnInfoCache(), cfg.apiKey());
+            case CUSTOM:
+                CustomProviderConfig c = cfg.customProviderConfig();
+                if (c == null) return new VpnApi(CacheUtils.createVpnInfoCache(), cfg.apiKey());
+                return new CustomVpnInfoProvider(CacheUtils.createVpnInfoCache(), c.apiUrl(), c.headers(), c.parseFields());
+            default:
+                return new VpnApi(CacheUtils.createVpnInfoCache(), cfg.apiKey());
         }
     }
 

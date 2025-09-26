@@ -14,7 +14,6 @@
 lang: "en-US"
 
 # If set to true, OP players will always be allowed to join
-# You can also assign the "netwatchz.bypass" permission to players or groups to always allow them
 always_allow_ops: true
 
 ip_list:
@@ -107,3 +106,55 @@ ip_info_provider:
       org: "organization"
       asn: "asn"
       ip: "ip"
+
+# The vpn_block settings are for online services that provide information about whether an IP is a VPN or proxy.
+# This is independent of the ip_list feature, which can also be used to block VPNs
+vpn_block:
+  # Enable or disable the VPN blocking feature.
+  enabled: false
+
+  # Set the VPN info provider to use.
+  # Possible values are:
+  # - "vpnapi" (https://vpnapi.io)
+  # - "proxycheck" (https://proxycheck.io)
+  # - "custom" (Uses the custom VPN info provider defined below)
+  provider: "vpnapi"
+
+  # If using vpnapi or proxycheck, set your api key here
+  api_key: ""
+
+  custom:
+    # Set the custom VPN info provider URL. It should return a JSON response.
+    # Use %ip% as a placeholder for the IP address.
+    url: "https://api.example.com/vpn/%ip%"
+
+    # Set the custom VPN info provider headers.
+    headers:
+      Authorization: "Bearer YOUR_API_KEY"
+
+    # Set the custom VPN info provider query parameters.
+    parse_fields:
+      # Keys are the data needed. Values are the json keys in the response.
+      # If certain data is not provided by the API, you can leave it out.
+      vpn: "security.vpn"
+      proxy: "security.proxy"
+      tor: "security.tor"
+      relay: "security.relay"
+      hosting: "security.hosting"
+
+  # Set what to do when a certain type of VPN/proxy is detected.
+  is_vpn:
+    # Wether or not to block the connection if the IP is detected as a VPN.
+    block: true
+
+  is_proxy:
+    block: false
+
+  is_tor:
+    block: true
+
+  is_relay:
+    block: false
+
+  is_hosting:
+    block: false

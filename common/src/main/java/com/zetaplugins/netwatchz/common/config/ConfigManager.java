@@ -11,6 +11,8 @@ public abstract class ConfigManager {
 
     public abstract IpListConfig loadIpListConfig();
 
+    public abstract VpnBlockConfig loadVpnBlockConfig();
+
     /**
      * Check if a URL is valid
      * @param url the URL to check

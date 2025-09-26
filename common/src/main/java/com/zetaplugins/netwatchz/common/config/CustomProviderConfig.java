@@ -3,7 +3,7 @@ package com.zetaplugins.netwatchz.common.config;
 import java.util.Map;
 
 /**
- * Configuration for a custom IP info provider
+ * Configuration for a custom IP or VPN info provider
  * @param apiUrl the API URL with %ip% as a placeholder for the IP address
  * @param headers the headers to include in the request
  * @param parseFields the fields to parse from the response, mapping standard field names to JSON keys

@@ -2,7 +2,7 @@ package com.zetaplugins.netwatchz.common.ipapi.fetchers;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.zetaplugins.netwatchz.common.ipapi.IpData;
-import com.zetaplugins.netwatchz.common.ipapi.IpDataFetchException;
+import com.zetaplugins.netwatchz.common.DataFetchException;
 import org.jetbrains.annotations.NotNull;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -36,9 +36,9 @@ public final class CustomIpDataFetcher extends IpDataFetcher {
     }
 
     @Override
-    public IpData fetchIpData(String ip) throws IpDataFetchException {
+    public IpData fetchIpData(String ip) throws DataFetchException {
         if (ip == null || ip.isEmpty()) {
-            throw new IpDataFetchException("IP address cannot be null or empty");
+            throw new DataFetchException("IP address cannot be null or empty");
         }
 
         if (getCache().getIfPresent(ip) != null) {
@@ -53,7 +53,7 @@ public final class CustomIpDataFetcher extends IpDataFetcher {
             getCache().put(ip, data);
             return data;
         } catch (Exception e) {
-            throw new IpDataFetchException("Failed to fetch IP data from " + getApiUrl() + ip, e);
+            throw new DataFetchException("Failed to fetch IP data from " + getApiUrl() + ip, e);
         }
     }
 

@@ -9,7 +9,7 @@ import com.maxmind.geoip2.model.AsnResponse;
 import com.maxmind.geoip2.model.CityResponse;
 import com.maxmind.geoip2.model.CountryResponse;
 import com.zetaplugins.netwatchz.common.ipapi.IpData;
-import com.zetaplugins.netwatchz.common.ipapi.IpDataFetchException;
+import com.zetaplugins.netwatchz.common.DataFetchException;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import java.util.zip.GZIPInputStream;
@@ -106,8 +106,8 @@ public final class GeoLite2Fetcher extends IpDataFetcher {
     }
 
     @Override
-    public IpData fetchIpData(String ip) throws IpDataFetchException {
-        if (ip == null || ip.isEmpty()) throw new IpDataFetchException("IP address cannot be null or empty");
+    public IpData fetchIpData(String ip) throws DataFetchException {
+        if (ip == null || ip.isEmpty()) throw new DataFetchException("IP address cannot be null or empty");
 
         IpData cached = getCache().getIfPresent(ip);
         if (cached != null) return cached;
@@ -208,16 +208,16 @@ public final class GeoLite2Fetcher extends IpDataFetcher {
             }
 
         } catch (IOException | GeoIp2Exception e) {
-            throw new IpDataFetchException("Failed GeoLite (ASN/City/Country) lookup for " + ip, e);
+            throw new DataFetchException("Failed GeoLite (ASN/City/Country) lookup for " + ip, e);
         }
     }
 
     /**
      * Ensures that the mmdb databases are downloaded and the readers are opened and fresh.
      * @throws IOException if an I/O error occurs
-     * @throws IpDataFetchException if a download or extraction error occurs
+     * @throws DataFetchException if a download or extraction error occurs
      */
-    private void ensureDatabasesReady() throws IOException, IpDataFetchException {
+    private void ensureDatabasesReady() throws IOException, DataFetchException {
         if (readersFresh()) return;
 
         rwLock.writeLock().lock();
@@ -293,7 +293,7 @@ public final class GeoLite2Fetcher extends IpDataFetcher {
      * @param dest Destination path for the .mmdb
      * @param mmdbNameHint Preferred filename (e.g., "GeoLite2-City.mmdb") to select from tarball
      */
-    private void downloadSmart(String urlStr, Path dest, String mmdbNameHint) throws IOException, IpDataFetchException {
+    private void downloadSmart(String urlStr, Path dest, String mmdbNameHint) throws IOException, DataFetchException {
         String lower = urlStr.toLowerCase();
         if (lower.endsWith(".mmdb")) {
             downloadDirect(urlStr, dest);
@@ -328,7 +328,7 @@ public final class GeoLite2Fetcher extends IpDataFetcher {
         }
     }
 
-    private void downloadDirect(String urlStr, Path dest) throws IOException, IpDataFetchException {
+    private void downloadDirect(String urlStr, Path dest) throws IOException, DataFetchException {
         logger.info("Downloading GeoLite2 mmdb from " + urlStr + " ...");
         var start = Instant.now();
         Path tmp = Files.createTempFile("geolite-", ".mmdb");
@@ -342,7 +342,7 @@ public final class GeoLite2Fetcher extends IpDataFetcher {
         }
     }
 
-    private void downloadAndExtractTarGz(String urlStr, Path dest, String mmdbNameHint) throws IOException, IpDataFetchException {
+    private void downloadAndExtractTarGz(String urlStr, Path dest, String mmdbNameHint) throws IOException, DataFetchException {
         logger.info("Downloading GeoLite2 tar.gz from " + urlStr + " ...");
         var start = Instant.now();
         Path tmp = Files.createTempFile("geolite-", ".tar.gz");
@@ -360,7 +360,7 @@ public final class GeoLite2Fetcher extends IpDataFetcher {
         }
     }
 
-    private void extractMmdbFromTarStream(TarArchiveInputStream tis, Path dest, String mmdbNameHint) throws IOException, IpDataFetchException {
+    private void extractMmdbFromTarStream(TarArchiveInputStream tis, Path dest, String mmdbNameHint) throws IOException, DataFetchException {
         TarArchiveEntry entry;
         Path tmpOut = Files.createTempFile("geolite-extract-", ".mmdb");
         boolean found = false;
@@ -380,7 +380,7 @@ public final class GeoLite2Fetcher extends IpDataFetcher {
                 }
             }
             if (!found) {
-                throw new IpDataFetchException("MMDB file not found in tarball (looked for: " + mmdbNameHint + ").");
+                throw new DataFetchException("MMDB file not found in tarball (looked for: " + mmdbNameHint + ").");
             }
             Files.move(tmpOut, dest, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
         } finally {
@@ -388,7 +388,7 @@ public final class GeoLite2Fetcher extends IpDataFetcher {
         }
     }
 
-    private void httpDownload(URL url, Path dest) throws IOException, IpDataFetchException {
+    private void httpDownload(URL url, Path dest) throws IOException, DataFetchException {
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setInstanceFollowRedirects(true);
         conn.setRequestMethod("GET");
@@ -398,7 +398,7 @@ public final class GeoLite2Fetcher extends IpDataFetcher {
         int code = conn.getResponseCode();
         if (code >= 400) {
             String err = readStream(conn.getErrorStream());
-            throw new IpDataFetchException("Failed to download " + url + " (HTTP " + code + ") – " + err);
+            throw new DataFetchException("Failed to download " + url + " (HTTP " + code + ") – " + err);
         }
 
         try (InputStream in = conn.getInputStream();

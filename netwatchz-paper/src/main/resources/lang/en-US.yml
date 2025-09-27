@@ -4,4 +4,12 @@ vpnblock_ban_message: "&cYour IP address has been blocked because it is associat
 usage_error: "&cUsage: %usage%"
 player_not_found: "&cPlayer not found!"
 ip_data_fetch_error: "&cCould not fetch IP data for %player%!"
-ip_info: "<br>&8--- <#FF6F00>&lIP Information &r&8---<br><br><#FF6F00>Player: &7%player%<br><#FF6F00>IP: &7%ip%<br><#FF6F00>Country: &7%country%<br><#FF6F00>Region: &7%region%<br><#FF6F00>ISP: &7%isp%<br><#FF6F00>Organization: &7%org%<br><#FF6F00>ASN: &7%asn%<br><br>&8----------------------<br>"
+ip_info: "<br>&8--- <gradient:#FF80AB:#D81B60>&lIP Information </gradient>&r&8---<br><br>
+<#FF80AB>Player: <click:copy_to_clipboard:%player%><hover:show_text:'&7Click to copy to clipboard'>&7%player%</hover></click><br>
+<#FF80AB>IP: <click:copy_to_clipboard:%ip%><hover:show_text:'&7Click to copy to clipboard'>&7%ip%</hover></click><br>
+<#FF80AB>Country: <click:copy_to_clipboard:%country%><hover:show_text:'&7Click to copy to clipboard'>&7%country%</hover></click><br>
+<#FF80AB>Region: <click:copy_to_clipboard:%region%><hover:show_text:'&7Click to copy to clipboard'>&7%region%</hover></click><br>
+<#FF80AB>ISP: <click:copy_to_clipboard:%isp%><hover:show_text:'&7Click to copy to clipboard'>&7%isp%</hover></click><br>
+<#FF80AB>Organization: <click:copy_to_clipboard:%org%><hover:show_text:'&7Click to copy to clipboard'>&7%org%</hover></click><br>
+<#FF80AB>ASN: <click:copy_to_clipboard:%asn%><hover:show_text:'&7Click to copy to clipboard'>&7%asn%</hover></click><br><br>
+&8----------------------<br>"

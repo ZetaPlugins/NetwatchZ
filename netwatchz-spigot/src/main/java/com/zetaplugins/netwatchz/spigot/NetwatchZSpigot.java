@@ -1,17 +1,157 @@
 package com.zetaplugins.netwatchz.spigot;
 
+import com.zetaplugins.netwatchz.common.CacheUtils;
+import com.zetaplugins.netwatchz.common.config.*;
+import com.zetaplugins.netwatchz.common.ipapi.fetchers.*;
+import com.zetaplugins.netwatchz.common.iplist.IpListFetcher;
+import com.zetaplugins.netwatchz.common.iplist.IpListService;
+import com.zetaplugins.netwatchz.common.vpnblock.providers.CustomVpnInfoProvider;
+import com.zetaplugins.netwatchz.common.vpnblock.providers.ProxyCheck;
+import com.zetaplugins.netwatchz.common.vpnblock.providers.VpnApi;
+import com.zetaplugins.netwatchz.common.vpnblock.providers.VpnInfoProvider;
+import com.zetaplugins.netwatchz.spigot.util.*;
+import com.zetaplugins.zetacore.services.LocalizationService;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.File;
+import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.stream.Collectors;
+
 public final class NetwatchZSpigot extends JavaPlugin {
+    private IpDataFetcher ipDataFetcher;
+    private LocalizationService localizationService;
+    private SpigotMessageService messageService;
+    private IpListService ipListService;
+    private IpListFetcher ipListFetcher;
+    private VpnInfoProvider vpnInfoProvider;
 
     @Override
     public void onEnable() {
-        // Plugin startup logic
+        saveDefaultConfig();
+        getConfig().options().copyDefaults(true);
+        saveConfig();
 
+        var configManager = new SpigotConfigManager(this);
+
+        IpInfoProviderConfig ipInfoCfg = configManager.loadIpInfoProviderConfig();
+        IpListConfig ipListCfg = configManager.loadIpListConfig();
+        VpnBlockConfig vpnBlockCfg = configManager.loadVpnBlockConfig();
+
+        ipDataFetcher = createIpDataFetcher(ipInfoCfg);
+        ipListFetcher = createIpListFetcher(ipListCfg);
+        ipListService = createIpListService(ipListCfg);
+        vpnInfoProvider = createVpnInfoProvider(vpnBlockCfg);
+        localizationService = new LocalizationService(this, new ArrayList<>() {{
+            add("en-US");
+            add("de-DE");
+        }});
+        messageService = new SpigotMessageService(localizationService);
+
+        new EventManager(this).registerListeners();
+        new CommandManager(this).registerCommands();
+
+        initializeBStats();
+
+        getLogger().info("NetwatchZSpigot has been enabled!");
+    }
+
+    public IpDataFetcher getIpDataFetcher() {
+        return ipDataFetcher;
+    }
+
+    public IpListService getIpListService() {
+        return ipListService;
+    }
+
+    public IpListFetcher getIpListFetcher() {
+        return ipListFetcher;
+    }
+
+    public VpnInfoProvider getVpnInfoProvider() {
+        return vpnInfoProvider;
+    }
+
+    public LocalizationService getLocalizationService() {
+        return localizationService;
+    }
+
+    public SpigotMessageService getMessageService() {
+        return messageService;
     }
 
     @Override
     public void onDisable() {
-        // Plugin shutdown logic
+        if (ipDataFetcher != null) ipDataFetcher.onShutDown();
+        getLogger().info("NetwatchZPaper has been disabled!");
+    }
+
+    public static String getIpFromInetAdress(InetAddress addr) {
+        //return "146.70.231.4";
+        return addr.getHostAddress();
+    }
+
+    private IpListService createIpListService(IpListConfig cfg) {
+        return new IpListService(cfg.listNames().stream()
+                .map(cfg.ipListsDir()::resolve)
+                .collect(Collectors.toList()),
+                getLogger());
+    }
+
+    private IpListFetcher createIpListFetcher(IpListConfig cfg) {
+        var fetcher = new IpListFetcher(getLogger());
+        if (!cfg.fetchJobs().isEmpty()) fetcher.start(cfg.fetchJobs());
+        return fetcher;
+    }
+
+    private IpDataFetcher createIpDataFetcher(IpInfoProviderConfig cfg) {
+        switch (cfg.provider()) {
+            case IPWHOIS:
+                return new IpWhois(CacheUtils.createIpApiCache());
+            case GEOLITE2:
+                GeoLite2Config g = cfg.geoLite2();
+                if (g == null) return new IpApiCom(CacheUtils.createIpApiCache());
+                return new GeoLite2Fetcher(
+                        getLogger(),
+                        CacheUtils.createIpApiCache(),
+                        g.storageDir(),
+                        g.updateIntervalDays(),
+                        g.asnUrl(),
+                        g.cityUrl(),
+                        g.countryUrl()
+                );
+            case CUSTOM:
+                CustomProviderConfig c = cfg.custom();
+                if (c == null) return new IpApiCom(CacheUtils.createIpApiCache());
+                return new CustomIpDataFetcher(CacheUtils.createIpApiCache(), c.apiUrl(), c.headers(), c.parseFields());
+            default:
+                return new IpApiCom(CacheUtils.createIpApiCache());
+        }
+    }
+
+    private VpnInfoProvider createVpnInfoProvider(VpnBlockConfig cfg) {
+        switch (cfg.provider()) {
+            case PROXYCHECK:
+                return new ProxyCheck(CacheUtils.createVpnInfoCache(), cfg.apiKey());
+            case CUSTOM:
+                CustomProviderConfig c = cfg.customProviderConfig();
+                if (c == null) return new VpnApi(CacheUtils.createVpnInfoCache(), cfg.apiKey());
+                return new CustomVpnInfoProvider(CacheUtils.createVpnInfoCache(), c.apiUrl(), c.headers(), c.parseFields());
+            default:
+                return new VpnApi(CacheUtils.createVpnInfoCache(), cfg.apiKey());
+        }
+    }
+
+    private void initializeBStats() {
+        int pluginId = 27376;
+        Metrics metrics = new Metrics(this, pluginId);
+
+        metrics.addCustomChart(new Metrics.SimplePie("ip_info_provider", () -> getConfig().getString("ip_info_provider.provider")));
+        metrics.addCustomChart(new Metrics.SimplePie("geo_blocking_enabled", () -> getConfig().getBoolean("geo_blocking.enabled") ? "true" : "false"));
+        metrics.addCustomChart(new Metrics.SimplePie("ip_list_enabled", () -> getConfig().getBoolean("ip_list.enabled") ? "true" : "false"));
+    }
+
+    public File getPluginFile() {
+        return getFile();
     }
 }

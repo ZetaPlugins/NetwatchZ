@@ -1,7 +1,26 @@
-name: platform-spigot
+name: NetwatchZ
 version: '1.0.0'
 main: com.zetaplugins.netwatchz.spigot.NetwatchZSpigot
-api-version: '1.19'
+api-version: '1.17'
 load: STARTUP
 description: Anti VPN, Geoblocking and IP tracking plugin 
 website: zetaplugins.com
+
+commands:
+  ipinfo:
+    description: Get information about a player's IP address
+    permission: netwatchz.ipinfo
+  nwzdebug:
+    description: Generate a debug report for NetwatchZ
+    permission: netwatchz.admin.debug
+
+permissions:
+  netwatchz.ipinfo:
+    description: Allows the player to use the /ipinfo command
+    default: op
+  netwatchz.bypass:
+    description: Allows the player to bypass all checks
+    default: op
+  netwatchz.admin.debug:
+    description: Allows the player to generate debug reports
+    default: op

@@ -91,8 +91,8 @@ public final class NetwatchZPaper extends JavaPlugin {
     }
 
     public static String getIpFromInetAdress(InetAddress addr) {
-        return "146.70.231.4";
-        //return addr.getHostAddress();
+        //return "146.70.231.4";
+        return addr.getHostAddress();
     }
 
     private IpListService createIpListService(IpListConfig cfg) {

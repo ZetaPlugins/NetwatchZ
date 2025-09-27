@@ -1,6 +1,6 @@
 geoblock_ban_message: "&cYour IP address has been blocked due to suspicious activity!<br><br>&7If you believe this is an error, please contact support."
 iplist_ban_message: "&cYour IP address has been blocked due to suspicious activity!<br><br>&7If you believe this is an error, please contact support."
-vpnblock_ban_message: "&cYour IP address has been blocked because it is associated with a VPN service!<br><br>&7If you believe this is an error, please contact support."
+vpnblock_ban_message: "&cYour IP address has been blocked because it is associated with a VPN service!<br>Try disabling your VPN and reconnecting.<br><br>&7If you believe this is an error, please contact support."
 usage_error: "&cUsage: %usage%"
 player_not_found: "&cPlayer not found!"
 ip_data_fetch_error: "&cCould not fetch IP data for %player%!"

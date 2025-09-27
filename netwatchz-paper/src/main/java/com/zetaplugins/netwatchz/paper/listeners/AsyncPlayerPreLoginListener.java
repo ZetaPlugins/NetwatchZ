@@ -126,24 +126,33 @@ public final class AsyncPlayerPreLoginListener implements Listener {
     }
 
     private boolean handleVpnBlocking(VpnInfoData ipData, String playerName, String playerIp, AsyncPlayerPreLoginEvent event) {
-        boolean blockVpn = plugin.getConfig().getBoolean("vpn_block.is_vpn.block", true);
-        boolean blockProxy = plugin.getConfig().getBoolean("vpn_block.is_proxy.block", false);
-        boolean blockTor = plugin.getConfig().getBoolean("vpn_block.is_tor.block", true);
-        boolean blockRelay = plugin.getConfig().getBoolean("vpn_block.is_relay.block", false);
-        boolean blockHosting = plugin.getConfig().getBoolean("vpn_block.is_hosting.block", false);
+        String type = null;
+        if (ipData.isVpn()) type = "is_vpn";
+        else if (ipData.isProxy()) type = "is_proxy";
+        else if (ipData.isTor()) type = "is_tor";
+        else if (ipData.isRelay()) type = "is_relay";
+        else if (ipData.isHosting()) type = "is_hosting";
 
-        if ((blockVpn && ipData.isVpn()) ||
-                (blockProxy && ipData.isProxy()) ||
-                (blockTor && ipData.isTor()) ||
-                (blockRelay && ipData.isRelay()) ||
-                (blockHosting && ipData.isHosting())) {
+        if (type == null) return false;
+
+        List<String> commands = plugin.getConfig().getStringList("vpn_block." + type + ".commands");
+        for (String command : commands) {
+            String parsedCommand = command.replace("%player%", playerName).replace("%ip%", playerIp);
+
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), parsedCommand);
+            });
+        }
+
+        boolean shouldBlock = plugin.getConfig().getBoolean("vpn_block." + type + ".block", true);
+        if (shouldBlock) {
             plugin.getLogger().info("Player " + playerName + " with IP: " + playerIp + " was blocked due to VPN/Proxy/Tor/Relay/Hosting usage.");
             event.disallow(
                     AsyncPlayerPreLoginEvent.Result.KICK_BANNED,
                     plugin.getMessageService().getAndFormatMsg(
                             false,
                             "vpnblock_ban_message",
-                            "&cYour IP address has been blocked due to suspicious activity!<br><br>&7If you believe this is an error, please contact support."
+                            "&cYour IP address has been blocked because it is associated with a VPN service!<br>Try disabling your VPN and reconnecting.<br><br>&7If you believe this is an error, please contact support."
                     )
             );
             return true;

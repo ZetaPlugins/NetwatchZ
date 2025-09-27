@@ -145,16 +145,29 @@ vpn_block:
   # Set what to do when a certain type of VPN/proxy is detected.
   is_vpn:
     # Wether or not to block the connection if the IP is detected as a VPN.
+    # You can configure the ban message in the lang file.
     block: true
+
+    # Commands to run when a VPN is detected. %player% will be replaced with the player's name.
+    commands:
+    # - "say &c%player% tried to join using a VPN!"
 
   is_proxy:
     block: false
+    commands:
+    # - "say &c%player% tried to join using a proxy!"
 
   is_tor:
     block: true
+    commands:
+    # - "say &c%player% tried to join using Tor!"
 
   is_relay:
     block: false
+    commands:
+    # - "say &c%player% tried to join using a relay!"
 
   is_hosting:
     block: false
+    commands:
+    # - "say &c%player% tried to join using a hosting provider!"

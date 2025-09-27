@@ -10,6 +10,9 @@ commands:
   ipinfo:
     description: Get information about a player's IP address
     permission: netwatchz.ipinfo
+  nwzdebug:
+    description: Generate a debug report for NetwatchZ
+    permission: netwatchz.admin.debug
 
 permissions:
   netwatchz.ipinfo:

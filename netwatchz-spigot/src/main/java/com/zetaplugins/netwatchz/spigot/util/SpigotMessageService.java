@@ -1,7 +1,6 @@
 package com.zetaplugins.netwatchz.spigot.util;
 
 import com.zetaplugins.zetacore.services.LocalizationService;
-import com.zetaplugins.zetacore.services.MessageService;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -21,7 +20,6 @@ public final class SpigotMessageService {
 
     /**
      * Format a message for Spigot as a legacy string (with § codes and \n for line breaks).
-     * Replaces placeholders first, then converts tags/gradients/hex to legacy codes.
      */
     public static String formatMsg(String msg, Replaceable<?>... replaceables) {
         msg = replacePlaceholders(msg, replaceables);
@@ -33,14 +31,12 @@ public final class SpigotMessageService {
             path = path.substring("messages.".length());
         }
 
-        String msg = this.localizationService.getString(path, fallback);
-        String prefix = this.localizationService.getString("prefix", "&8[&aTimberZ&8]");
+        String msg = localizationService.getString(path, fallback);
+        String prefix = localizationService.getString("prefix", "&8[&aTimberZ&8]");
         msg = !prefix.isEmpty() && addPrefix ? prefix + " " + msg : msg;
 
-        // Apply placeholders (including accent color)
         msg = replacePlaceholdersWithAccentColors(msg, replaceables);
 
-        // Convert to legacy § style string (handles <#HEX>, <gradient:...>, <b> etc.)
         return convertToLegacy(msg);
     }
 
@@ -49,7 +45,7 @@ public final class SpigotMessageService {
             path = path.substring("messages.".length());
         }
 
-        List<String> msgList = this.localizationService.getStringList(path);
+        List<String> msgList = localizationService.getStringList(path);
         List<String> components = new ArrayList<>();
 
         for (String string : msgList) {
@@ -61,8 +57,7 @@ public final class SpigotMessageService {
     }
 
     public String getAccentColor() {
-        // Keep as &-code so legacy translation is possible in config; we convert it later.
-        return this.localizationService.getString("accentColor", "&a");
+        return localizationService.getString("accentColor", "&a");
     }
 
     public static @NotNull String replacePlaceholders(String msg, Replaceable<?>... replaceables) {
@@ -86,27 +81,24 @@ public final class SpigotMessageService {
     }
 
     /**
-     * Convert a (MiniMessage-ish) input to a legacy Spigot string:
+     * Convert a MiniMessage input to a legacy Spigot string:
      * - <br> -> \n
      * - <#RRGGBB> -> legacy hex §x§R§R§G§G§B§B
      * - <gradient:#RRGGBB:#RRGGBB>text</gradient> -> per-character hex coloring
      * - <b>, <i>, <u>, <s>, <obf>, <!b> etc -> §l, §o, §n, §m, §k, §r
      * - strips <click:...> and <hover:...> tags (keeps inner text)
-     *
-     * NOTE: This produces a plain String with legacy formatting. Click/Hover events are removed.
      */
     public static String convertToLegacy(String input) {
         if (input == null) return "";
 
-        // First normalize line breaks and remove leading/trailing whitespace artifact
+        // replace newline tags with actual newlines
         String out = input.replace("<br>", "\n").replace("<br/>", "\n").replace("<br />", "\n");
 
-        // Remove/strip interactive tags but keep their inner content:
-        // e.g. <click:copy_to_clipboard:%ip%> ... </click> -> ...
+        // remove interactive tags but keep inner text
         out = out.replaceAll("(?i)</?click(?::[^>]*)?>", "");
         out = out.replaceAll("(?i)</?hover(?::[^>]*)?>", "");
 
-        // Handle gradients: <gradient:#hex1:#hex2>inner</gradient>
+        // handle gradients
         Pattern gradPat = Pattern.compile("(?i)<gradient:#([0-9a-fA-F]{6}):#([0-9a-fA-F]{6})>(.*?)</gradient>", Pattern.DOTALL);
         Matcher gradMatcher = gradPat.matcher(out);
         StringBuffer gradBuff = new StringBuffer();
@@ -115,16 +107,22 @@ public final class SpigotMessageService {
             String toHex = gradMatcher.group(2);
             String inner = gradMatcher.group(3);
             String replaced = applyGradientToText(inner, fromHex, toHex);
-            // escape $ for regex replacement safety
             gradMatcher.appendReplacement(gradBuff, Matcher.quoteReplacement(replaced));
         }
         gradMatcher.appendTail(gradBuff);
         out = gradBuff.toString();
 
-        // Replace inline hex tags like <#RRGGBB> with legacy hex sequence
-        //out = out.replaceAll("(?i)<#([0-9a-fA-F]{6})>", match -> hexToLegacy(match.group(1)));
+        // Convert inline hex codes <#RRGGBB> to legacy §x format
+        Pattern hexPat = Pattern.compile("(?i)<#([0-9a-fA-F]{6})>");
+        Matcher hexMatcher = hexPat.matcher(out);
+        StringBuffer hexBuff = new StringBuffer();
+        while (hexMatcher.find()) {
+            String hex = hexMatcher.group(1);
+            hexMatcher.appendReplacement(hexBuff, Matcher.quoteReplacement(hexToLegacy(hex)));
+        }
+        hexMatcher.appendTail(hexBuff);
+        out = hexBuff.toString();
 
-        // Basic formatting tags
         out = out.replace("<b>", "§l");
         out = out.replace("</b>", "§r");
         out = out.replace("<i>", "§o");
@@ -136,36 +134,45 @@ public final class SpigotMessageService {
         out = out.replace("<obf>", "§k");
         out = out.replace("</obf>", "§r");
 
-        // Also support shorthand tags used in your original class:
+        // just reset all formatting on closing tags (I know it's not perfect but whatever)
         out = out.replace("<!b>", "§r");
         out = out.replace("<!i>", "§r");
         out = out.replace("<!u>", "§r");
         out = out.replace("<!s>", "§r");
         out = out.replace("<!obf>", "§r");
 
-        // Replace any remaining &-style codes with § (common in config)
         out = out.replace('&', '§');
 
         return out;
     }
 
-    /**
-     * Produce an interpolated color string for each character in text,
-     * using legacy §x hex codes before each character.
-     */
     private static String applyGradientToText(String text, String fromHex, String toHex) {
         if (text == null || text.isEmpty()) return "";
+
+        text = text.replace('&', '§');
 
         int len = text.codePointCount(0, text.length());
         int[] from = hexToRgb(fromHex);
         int[] to = hexToRgb(toHex);
 
         StringBuilder sb = new StringBuilder();
-        // iterate code points to handle non-BMP characters safely
+        String activeFormatting = "";
+
         int cpIndex = 0;
         for (int offset = 0; offset < text.length(); ) {
             int cp = text.codePointAt(offset);
             int charLen = Character.charCount(cp);
+
+            if (cp == '§' && offset + 1 < text.length()) {
+                char code = text.charAt(offset + 1);
+                if ("lmnok".indexOf(code) != -1) {// Only apply l, m, n, o, k formatting, not colors
+                    activeFormatting += "§" + code;
+                } else if (code == 'r') {
+                    activeFormatting = "";
+                }
+                offset += 2; // skip § and code
+                continue;
+            }
 
             double t = (len == 1) ? 0.0 : ((double) cpIndex) / (len - 1);
             int r = (int) Math.round(lerp(from[0], to[0], t));
@@ -174,6 +181,7 @@ public final class SpigotMessageService {
             String hex = String.format("%02x%02x%02x", r, g, b);
 
             sb.append(hexToLegacy(hex));
+            sb.append(activeFormatting);
             sb.appendCodePoint(cp);
 
             offset += charLen;
@@ -196,7 +204,6 @@ public final class SpigotMessageService {
 
     /**
      * Convert a hex string RRGGBB to legacy '§x§R§R§G§G§B§B' format.
-     * Works on Spigot 1.16+ clients.
      */
     private static String hexToLegacy(String hex) {
         hex = hex.replace("#", "");
@@ -208,14 +215,19 @@ public final class SpigotMessageService {
     }
 
     private static void replaceInBuilder(StringBuilder builder, String placeholder, String replacement) {
-        int index;
-        while ((index = builder.indexOf(placeholder)) != -1) {
+        if (placeholder == null || placeholder.isEmpty()) return;
+
+        int start = 0;
+        while (true) {
+            int index = builder.indexOf(placeholder, start);
+            if (index == -1) break;
             builder.replace(index, index + placeholder.length(), replacement);
+            start = index + replacement.length();
+            if (start < 0 || start > builder.length()) break;
         }
     }
 
     static {
-        // keep colorMap mapping from &-codes to themselves (we will convert & -> § later)
         colorMap.put("&0", "&0");
         colorMap.put("&1", "&1");
         colorMap.put("&2", "&2");
@@ -240,6 +252,5 @@ public final class SpigotMessageService {
         colorMap.put("&r", "&r");
     }
 
-    public static record Replaceable<T>(String placeholder, T value) {
-    }
+    public static record Replaceable<T>(String placeholder, T value) {}
 }

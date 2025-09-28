@@ -101,7 +101,7 @@ public final class SpigotMessageService {
         // handle gradients
         Pattern gradPat = Pattern.compile("(?i)<gradient:#([0-9a-fA-F]{6}):#([0-9a-fA-F]{6})>(.*?)</gradient>", Pattern.DOTALL);
         Matcher gradMatcher = gradPat.matcher(out);
-        StringBuffer gradBuff = new StringBuffer();
+        StringBuilder gradBuff = new StringBuilder();
         while (gradMatcher.find()) {
             String fromHex = gradMatcher.group(1);
             String toHex = gradMatcher.group(2);
@@ -115,7 +115,7 @@ public final class SpigotMessageService {
         // Convert inline hex codes <#RRGGBB> to legacy §x format
         Pattern hexPat = Pattern.compile("(?i)<#([0-9a-fA-F]{6})>");
         Matcher hexMatcher = hexPat.matcher(out);
-        StringBuffer hexBuff = new StringBuffer();
+        StringBuilder hexBuff = new StringBuilder();
         while (hexMatcher.find()) {
             String hex = hexMatcher.group(1);
             hexMatcher.appendReplacement(hexBuff, Matcher.quoteReplacement(hexToLegacy(hex)));
@@ -252,5 +252,5 @@ public final class SpigotMessageService {
         colorMap.put("&r", "&r");
     }
 
-    public static record Replaceable<T>(String placeholder, T value) {}
+    public record Replaceable<T>(String placeholder, T value) {}
 }

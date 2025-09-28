@@ -31,7 +31,8 @@ public final class CommandManager {
                 plugin,
                 plugin.getPluginFile(),
                 "netwatchz.admin.debug",
-                configsMap
+                configsMap,
+                plugin.getMessageService()
         );
         registerCommand("nwzdebug", debugCommandHandler, debugCommandHandler);
     }

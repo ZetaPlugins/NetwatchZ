@@ -9,15 +9,14 @@ import com.zetaplugins.netwatchz.paper.util.CommandManager;
 import com.zetaplugins.netwatchz.paper.util.PaperConfigManager;
 import com.zetaplugins.netwatchz.paper.util.EventManager;
 import com.zetaplugins.netwatchz.paper.util.Metrics;
+import com.zetaplugins.zetacore.ZetaCorePlugin;
 import com.zetaplugins.zetacore.services.LocalizationService;
 import com.zetaplugins.zetacore.services.MessageService;
-import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.File;
 import java.net.InetAddress;
 import java.util.ArrayList;
 
-public final class NetwatchZPaper extends JavaPlugin {
+public final class NetwatchZPaper extends ZetaCorePlugin {
     private IpDataFetcher ipDataFetcher;
     private LocalizationService localizationService;
     private MessageService messageService;
@@ -97,9 +96,5 @@ public final class NetwatchZPaper extends JavaPlugin {
         metrics.addCustomChart(new Metrics.SimplePie("ip_info_provider", () -> getConfig().getString("ip_info_provider.provider")));
         metrics.addCustomChart(new Metrics.SimplePie("geo_blocking_enabled", () -> getConfig().getBoolean("geo_blocking.enabled") ? "true" : "false"));
         metrics.addCustomChart(new Metrics.SimplePie("ip_list_enabled", () -> getConfig().getBoolean("ip_list.enabled") ? "true" : "false"));
-    }
-
-    public File getPluginFile() {
-        return getFile();
     }
 }

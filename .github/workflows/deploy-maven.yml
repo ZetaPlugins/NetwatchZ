@@ -28,6 +28,15 @@ jobs:
 
       - name: Set up SSH
         run: |
+          if [ -z "${{ secrets.MVN_REPO_SSH_KEY }}" ]; then
+            echo "Error: MVN_REPO_SSH_KEY is not set"
+            exit 1
+          fi
+          if [ -z "${{ secrets.MVN_REPO_SSH_HOST }}" ]; then
+            echo "Error: MVN_REPO_SSH_HOST is not set"
+            exit 1
+          fi
+
           mkdir -p ~/.ssh
           echo "${{ secrets.MVN_REPO_SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa

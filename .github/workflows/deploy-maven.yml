@@ -26,20 +26,6 @@ jobs:
             mvn -pl $module -am clean package -DskipTests
           done
 
-      - name: Extract Maven coordinates
-        id: meta
-        run: |
-          for module in netwatchz-spigot netwatchz-paper; do
-            cd $module
-            groupId=$(mvn help:evaluate -Dexpression=project.groupId -q -DforceStdout)
-            artifactId=$(mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout)
-            version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-            echo "$module.groupId=$groupId" >> $GITHUB_OUTPUT
-            echo "$module.artifactId=$artifactId" >> $GITHUB_OUTPUT
-            echo "$module.version=$version" >> $GITHUB_OUTPUT
-            cd ..
-          done
-
       - name: Set up SSH
         run: |
           mkdir -p ~/.ssh
@@ -47,48 +33,40 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.MVN_REPO_SSH_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Check if versions already exist
+      - name: Check if versions already exist and upload
         run: |
           for module in netwatchz-spigot netwatchz-paper; do
-            GROUP_PATH=$(echo "${{ steps.meta.outputs[$module.groupId] }}" | sed 's/\./\//g')
-            ARTIFACT_ID=${{ steps.meta.outputs[$module.artifactId] }}
-            VERSION=${{ steps.meta.outputs[$module.version] }}
+            echo "Processing $module..."
+
+            cd $module
+            GROUP_ID=$(mvn help:evaluate -Dexpression=project.groupId -q -DforceStdout)
+            ARTIFACT_ID=$(mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout)
+            VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+            cd ..
+
+            GROUP_PATH=$(echo "$GROUP_ID" | sed 's/\./\//g')
             REMOTE_DIR="${{ secrets.REMOTE_MAVEN_PATH }}/$GROUP_PATH/$ARTIFACT_ID/$VERSION"
             REMOTE_JAR="$REMOTE_DIR/$ARTIFACT_ID-$VERSION.jar"
 
-            echo "Checking if $REMOTE_JAR exists on remote repository..."
+            echo "Checking if $REMOTE_JAR exists..."
             if ssh ${{ secrets.MVN_REPO_SSH_USER }}@${{ secrets.MVN_REPO_SSH_HOST }} "[ -f $REMOTE_JAR ]"; then
               echo "Version $VERSION of $ARTIFACT_ID already exists. Exiting."
               exit 1
-            else
-              echo "Version does not exist. Continuing deployment for $module..."
             fi
-          done
 
-      - name: Generate checksums and upload artifacts
-        run: |
-          for module inzetacore netwatchz-spigot netwatchz-paper; do
-            GROUP_PATH=$(echo "${{ steps.meta.outputs[$module.groupId] }}" | sed 's/\./\//g')
-            ARTIFACT_ID=${{ steps.meta.outputs[$module.artifactId] }}
-            VERSION=${{ steps.meta.outputs[$module.version] }}
-            REMOTE_DIR="${{ secrets.REMOTE_MAVEN_PATH }}/$GROUP_PATH/$ARTIFACT_ID/$VERSION"
-
+            # Prepare checksums
             mkdir -p checksums
             cp $module/target/$ARTIFACT_ID-$VERSION.jar checksums/
             cp $module/pom.xml checksums/$ARTIFACT_ID-$VERSION.pom
 
             cd checksums
-
-            # Generate checksum files
             for file in *.{jar,pom}; do
               sha1sum "$file" | awk '{print $1}' > "$file.sha1"
               md5sum "$file" | awk '{print $1}' > "$file.md5"
             done
 
-            echo "Creating remote directory: $REMOTE_DIR"
+            # Upload artifacts
             ssh ${{ secrets.MVN_REPO_SSH_USER }}@${{ secrets.MVN_REPO_SSH_HOST }} "mkdir -p $REMOTE_DIR"
-
-            echo "Uploading JAR, POM, and checksums for $module"
             scp * ${{ secrets.MVN_REPO_SSH_USER }}@${{ secrets.MVN_REPO_SSH_HOST }}:$REMOTE_DIR/
 
             cd ..

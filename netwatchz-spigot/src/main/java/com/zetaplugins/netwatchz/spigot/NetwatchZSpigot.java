@@ -6,14 +6,13 @@ import com.zetaplugins.netwatchz.common.iplist.IpListFetcher;
 import com.zetaplugins.netwatchz.common.iplist.IpListService;
 import com.zetaplugins.netwatchz.common.vpnblock.providers.VpnInfoProvider;
 import com.zetaplugins.netwatchz.spigot.util.*;
+import com.zetaplugins.zetacore.ZetaCorePlugin;
 import com.zetaplugins.zetacore.services.LocalizationService;
-import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.File;
 import java.net.InetAddress;
 import java.util.ArrayList;
 
-public final class NetwatchZSpigot extends JavaPlugin {
+public final class NetwatchZSpigot extends ZetaCorePlugin {
     private IpDataFetcher ipDataFetcher;
     private LocalizationService localizationService;
     private SpigotMessageService messageService;
@@ -93,9 +92,5 @@ public final class NetwatchZSpigot extends JavaPlugin {
         metrics.addCustomChart(new Metrics.SimplePie("ip_info_provider", () -> getConfig().getString("ip_info_provider.provider")));
         metrics.addCustomChart(new Metrics.SimplePie("geo_blocking_enabled", () -> getConfig().getBoolean("geo_blocking.enabled") ? "true" : "false"));
         metrics.addCustomChart(new Metrics.SimplePie("ip_list_enabled", () -> getConfig().getBoolean("ip_list.enabled") ? "true" : "false"));
-    }
-
-    public File getPluginFile() {
-        return getFile();
     }
 }

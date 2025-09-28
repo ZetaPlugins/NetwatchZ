@@ -1,5 +1,6 @@
 package com.zetaplugins.netwatchz.spigot.util;
 
+import com.zetaplugins.netwatchz.spigot.commands.DebugCommand;
 import com.zetaplugins.netwatchz.spigot.commands.IpInfoCommand;
 import com.zetaplugins.netwatchz.spigot.NetwatchZSpigot;
 import org.bukkit.command.CommandExecutor;
@@ -19,6 +20,9 @@ public final class CommandManager {
     public void registerCommands() {
         var ipInfoCommand = new IpInfoCommand(plugin);
         registerCommand("ipinfo", ipInfoCommand, ipInfoCommand);
+
+        var debugCommand = new DebugCommand(plugin);
+        registerCommand("nwzdebug", debugCommand, debugCommand);
     }
 
     /**

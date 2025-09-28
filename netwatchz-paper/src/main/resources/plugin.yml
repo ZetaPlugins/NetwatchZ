@@ -21,6 +21,6 @@ permissions:
   netwatchz.bypass:
     description: Allows the player to bypass all checks
     default: op
-  netwatchz.admin.debug:
+  netwatchz.debug:
     description: Allows the player to generate debug reports
     default: op

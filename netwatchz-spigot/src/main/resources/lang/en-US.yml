@@ -13,3 +13,10 @@ ip_info: "<br>&8--- <gradient:#FF80AB:#D81B60>&lIP Information </gradient>&r&8--
 <#FF80AB>Organization: <click:copy_to_clipboard:%org%><hover:show_text:'&7Click to copy to clipboard'>&7%org%</hover></click><br>
 <#FF80AB>ASN: <click:copy_to_clipboard:%asn%><hover:show_text:'&7Click to copy to clipboard'>&7%asn%</hover></click><br><br>
 &8----------------------<br>"
+debug_usage: "&cUsage: /%command% <upload | generate>"
+debug_no_permission: "&cYou do not have permission to use this command!"
+debug_file_create_success: "&8 [&a✔&8] &7Saved debug data to the following files:<br><click:COPY_TO_CLIPBOARD:%jsonPath%><#8b73f6>%jsonPath%</click><br><click:COPY_TO_CLIPBOARD:%txtPath%><#8b73f6>%txtPath%</click>"
+debug_failed_to_create_file: "&cFailed to create debug report file: %error%"
+debug_upload_confirm: "<br><#8b73f6>&lUploading Debug Report&r<br><br>&7 Are you sure you want to upload the debug report? By confirming, you accept our <u><click:OPEN_URL:https://debug.zetaplugins.com/privacy>Privacy Policy</click></u>.<br><br>&8 <#8b73f6><click:RUN_COMMAND:%command%>[Click Here]</click> &r&8or run <u>%command%</u><br>"
+debug_upload_failed: "&cFailed to upload debug report: %error%"
+debug_upload_success: "&8 [&a✔&8] &7Debug report uploaded successfully! You can view it here:<br>&8 <u><#8b73f6><click:OPEN_URL:%url%>%url%</click></u><br>"

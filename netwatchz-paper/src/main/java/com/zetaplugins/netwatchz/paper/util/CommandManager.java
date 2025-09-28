@@ -30,7 +30,7 @@ public final class CommandManager {
                 "pVji8xJW",
                 plugin,
                 plugin.getPluginFile(),
-                "netwatchz.admin.debug",
+                "netwatchz.debug",
                 configsMap,
                 plugin.getMessageService()
         );

@@ -1,0 +1,133 @@
+name: Publish NetWatchZ Plugin
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'maven'
+
+      - name: Cache Maven repository
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Get release version
+        id: get_version
+        run: echo "version=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
+
+      - name: Set version from release tag
+        run: mvn -B versions:set -DnewVersion=${{ github.event.release.tag_name }} -DgenerateBackupPoms=false
+
+      - name: Build all modules
+        run: mvn -B clean package
+
+      - name: Upload Paper JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: netwatchz-paper-jar
+          path: netwatchz-paper/target/netwatchz-paper-${{ github.event.release.tag_name }}.jar
+
+      - name: Upload Spigot JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: netwatchz-spigot-jar
+          path: netwatchz-spigot/target/netwatchz-spigot-${{ github.event.release.tag_name }}.jar
+
+  upload_release_assets:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Paper JAR
+        uses: actions/download-artifact@v4
+        with:
+          name: netwatchz-paper-jar
+          path: netwatchz-paper/target/
+
+      - name: Download Spigot JAR
+        uses: actions/download-artifact@v4
+        with:
+          name: netwatchz-spigot-jar
+          path: netwatchz-spigot/target/
+
+      - name: Upload both JARs to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            netwatchz-paper/target/netwatchz-paper-${{ github.event.release.tag_name }}.jar
+            netwatchz-spigot/target/netwatchz-spigot-${{ github.event.release.tag_name }}.jar
+          body: ${{ github.event.release.body }}
+
+  publish_modrinth_paper:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Paper JAR
+        uses: actions/download-artifact@v4
+        with:
+          name: netwatchz-paper-jar
+          path: netwatchz-paper/target/
+
+      - name: Publish Paper to Modrinth
+        uses: cloudnode-pro/modrinth-publish@v2
+        with:
+          token: ${{ secrets.MODRINTH_TOKEN }}
+          project: 'pVji8xJW'
+          version: ${{ github.event.release.tag_name }}
+          name: 'Release ${{ github.event.release.tag_name }} Paper'
+          changelog: ${{ github.event.release.body }}
+          files: '["netwatchz-paper/target/netwatchz-paper-${{ github.event.release.tag_name }}.jar"]'
+          loaders: paper
+          game-versions: |-
+            1.17.x
+            1.18.x
+            1.19.x
+            1.20.x
+            1.21.x
+          status: 'listed'
+          channel: 'release'
+
+  publish_modrinth_spigot:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Spigot JAR
+        uses: actions/download-artifact@v4
+        with:
+          name: netwatchz-spigot-jar
+          path: netwatchz-spigot/target/
+
+      - name: Publish Spigot to Modrinth
+        uses: cloudnode-pro/modrinth-publish@v2
+        with:
+          token: ${{ secrets.MODRINTH_TOKEN }}
+          project: 'pVji8xJW'
+          version: ${{ github.event.release.tag_name }}
+          name: 'Release ${{ github.event.release.tag_name }} Spigot'
+          changelog: ${{ github.event.release.body }}
+          files: '["netwatchz-spigot/target/netwatchz-spigot-${{ github.event.release.tag_name }}.jar"]'
+          loaders: spigot
+          game-versions: |-
+            1.17.x
+            1.18.x
+            1.19.x
+            1.20.x
+            1.21.x
+          status: 'listed'
+          channel: 'release'

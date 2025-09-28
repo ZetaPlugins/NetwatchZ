@@ -48,7 +48,7 @@ public final class NetwatchZSpigot extends JavaPlugin {
 
         initializeBStats();
 
-        getLogger().info("NetwatchZSpigot has been enabled!");
+        getLogger().info("NetwatchZ-Spigot has been enabled!");
     }
 
     public IpDataFetcher getIpDataFetcher() {
@@ -78,7 +78,7 @@ public final class NetwatchZSpigot extends JavaPlugin {
     @Override
     public void onDisable() {
         if (ipDataFetcher != null) ipDataFetcher.onShutDown();
-        getLogger().info("NetwatchZPaper has been disabled!");
+        getLogger().info("NetwatchZ-Spigot has been disabled!");
     }
 
     public static String getIpFromInetAdress(InetAddress addr) {

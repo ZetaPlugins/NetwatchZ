@@ -51,7 +51,7 @@ public final class NetwatchZPaper extends ZetaCorePlugin {
 
         initializeBStats();
 
-        getLogger().info("NetwatchZPaper has been enabled!");
+        getLogger().info("NetwatchZ-Paper has been enabled!");
     }
 
     public IpDataFetcher getIpDataFetcher() {
@@ -81,7 +81,7 @@ public final class NetwatchZPaper extends ZetaCorePlugin {
     @Override
     public void onDisable() {
         if (ipDataFetcher != null) ipDataFetcher.onShutDown();
-        getLogger().info("NetwatchZPaper has been disabled!");
+        getLogger().info("NetwatchZ-Paper has been disabled!");
     }
 
     public static String getIpFromInetAdress(InetAddress addr) {

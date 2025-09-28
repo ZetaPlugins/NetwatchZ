@@ -2,13 +2,9 @@ package com.zetaplugins.netwatchz.spigot.util;
 
 import com.zetaplugins.netwatchz.spigot.commands.IpInfoCommand;
 import com.zetaplugins.netwatchz.spigot.NetwatchZSpigot;
-import com.zetaplugins.zetacore.debug.command.DebugCommandHandler;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.command.TabCompleter;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public final class CommandManager {
     private final NetwatchZSpigot plugin;
@@ -23,17 +19,6 @@ public final class CommandManager {
     public void registerCommands() {
         var ipInfoCommand = new IpInfoCommand(plugin);
         registerCommand("ipinfo", ipInfoCommand, ipInfoCommand);
-
-        Map<String, String> configsMap = new HashMap<>();
-        configsMap.put("config.yml", plugin.getConfig().saveToString());
-        DebugCommandHandler debugCommandHandler = new DebugCommandHandler(
-                "pVji8xJW",
-                plugin,
-                plugin.getPluginFile(),
-                "netwatchz.admin.debug",
-                configsMap
-        );
-        registerCommand("nwzdebug", debugCommandHandler, debugCommandHandler);
     }
 
     /**

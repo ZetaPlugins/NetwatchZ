@@ -1,6 +1,7 @@
 package com.zetaplugins.netwatchz.spigot.util;
 
 import com.zetaplugins.netwatchz.spigot.NetwatchZSpigot;
+import com.zetaplugins.netwatchz.spigot.listeners.AsyncPlayerPreLoginListener;
 import org.bukkit.event.Listener;
 
 public final class EventManager {
@@ -14,7 +15,7 @@ public final class EventManager {
      * Registers all listeners
      */
     public void registerListeners() {
-        //registerListener(new AsyncPlayerPreLoginListener(plugin));
+        registerListener(new AsyncPlayerPreLoginListener(plugin));
     }
 
     /**

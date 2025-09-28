@@ -1,7 +1,10 @@
 package com.zetaplugins.netwatchz.common.vpnblock.providers;
 
 import com.github.benmanes.caffeine.cache.Cache;
+import com.zetaplugins.netwatchz.common.CacheUtils;
 import com.zetaplugins.netwatchz.common.DataFetchException;
+import com.zetaplugins.netwatchz.common.config.CustomProviderConfig;
+import com.zetaplugins.netwatchz.common.config.VpnBlockConfig;
 import com.zetaplugins.netwatchz.common.vpnblock.VpnInfoData;
 import org.jetbrains.annotations.NotNull;
 import org.json.simple.parser.ParseException;
@@ -18,6 +21,24 @@ public abstract class VpnInfoProvider {
 
     public VpnInfoProvider(Cache<@NotNull String, VpnInfoData> cache) {
         this.cache = cache;
+    }
+
+    /**
+     * Creates a VpnInfoProvider instance based on the provided configuration.
+     * @param cfg the VPN block configuration
+     * @return a VpnInfoProvider instance
+     */
+    public static VpnInfoProvider fromConfig(VpnBlockConfig cfg) {
+        switch (cfg.provider()) {
+            case PROXYCHECK:
+                return new ProxyCheck(CacheUtils.createVpnInfoCache(), cfg.apiKey());
+            case CUSTOM:
+                CustomProviderConfig c = cfg.customProviderConfig();
+                if (c == null) return new VpnApi(CacheUtils.createVpnInfoCache(), cfg.apiKey());
+                return new CustomVpnInfoProvider(CacheUtils.createVpnInfoCache(), c.apiUrl(), c.headers(), c.parseFields());
+            default:
+                return new VpnApi(CacheUtils.createVpnInfoCache(), cfg.apiKey());
+        }
     }
 
     protected Cache<@NotNull String, VpnInfoData> getCache() {

@@ -1,6 +1,10 @@
 package com.zetaplugins.netwatchz.common.ipapi.fetchers;
 
 import com.github.benmanes.caffeine.cache.Cache;
+import com.zetaplugins.netwatchz.common.CacheUtils;
+import com.zetaplugins.netwatchz.common.config.CustomProviderConfig;
+import com.zetaplugins.netwatchz.common.config.GeoLite2Config;
+import com.zetaplugins.netwatchz.common.config.IpInfoProviderConfig;
 import com.zetaplugins.netwatchz.common.ipapi.IpData;
 import com.zetaplugins.netwatchz.common.DataFetchException;
 import org.jetbrains.annotations.NotNull;
@@ -12,6 +16,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * Abstract class for fetching IP data from various APIs.
@@ -22,6 +27,37 @@ public abstract class IpDataFetcher {
 
     public IpDataFetcher(Cache<@NotNull String, IpData> cache) {
         this.cache = cache;
+    }
+
+    /**
+     * Creates an IpDataFetcher instance based on the provided configuration.
+     * @param cfg configuration containing provider settings
+     * @param logger logger for logging fetch results
+     * @return IpDataFetcher instance
+     */
+    public static IpDataFetcher fromConfig(IpInfoProviderConfig cfg, Logger logger) {
+        switch (cfg.provider()) {
+            case IPWHOIS:
+                return new IpWhois(CacheUtils.createIpApiCache());
+            case GEOLITE2:
+                GeoLite2Config g = cfg.geoLite2();
+                if (g == null) return new IpApiCom(CacheUtils.createIpApiCache());
+                return new GeoLite2Fetcher(
+                        logger,
+                        CacheUtils.createIpApiCache(),
+                        g.storageDir(),
+                        g.updateIntervalDays(),
+                        g.asnUrl(),
+                        g.cityUrl(),
+                        g.countryUrl()
+                );
+            case CUSTOM:
+                CustomProviderConfig c = cfg.custom();
+                if (c == null) return new IpApiCom(CacheUtils.createIpApiCache());
+                return new CustomIpDataFetcher(CacheUtils.createIpApiCache(), c.apiUrl(), c.headers(), c.parseFields());
+            default:
+                return new IpApiCom(CacheUtils.createIpApiCache());
+        }
     }
 
     protected Cache<@NotNull String, IpData> getCache() {

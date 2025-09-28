@@ -1,9 +1,12 @@
 package com.zetaplugins.netwatchz.common.iplist;
 
+import com.zetaplugins.netwatchz.common.config.IpListConfig;
+
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * Service that manages multiple IpListManagers.
@@ -28,6 +31,18 @@ public final class IpListService {
             })
             .filter(Objects::nonNull)
             .toList();
+    }
+
+    /**
+     * Creates an IpListService from the given configuration.
+     * @param cfg configuration containing list names and directory
+     * @param logger logger for logging messages
+     * @return IpListService instance
+     */
+    public static IpListService fromConfig(IpListConfig cfg, Logger logger) {
+        return new IpListService(cfg.listNames().stream()
+                .map(cfg.ipListsDir()::resolve)
+                .collect(Collectors.toList()), logger);
     }
 
     /**

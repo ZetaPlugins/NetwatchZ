@@ -1,5 +1,7 @@
 package com.zetaplugins.netwatchz.common.iplist;
 
+import com.zetaplugins.netwatchz.common.config.IpListConfig;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -26,6 +28,18 @@ public final class IpListFetcher {
         this.logger = logger;
         this.scheduler = Executors.newScheduledThreadPool(Runtime.getRuntime().availableProcessors());
         this.httpClient = HttpClient.newHttpClient();
+    }
+
+    /**
+     * Creates and starts an IpListFetcher from the given configuration.
+     * @param cfg configuration containing fetch jobs
+     * @param logger logger for logging fetch results
+     * @return started IpListFetcher instance
+     */
+    public static IpListFetcher fromConfig(IpListConfig cfg, Logger logger) {
+        var fetcher = new IpListFetcher(logger);
+        if (!cfg.fetchJobs().isEmpty()) fetcher.start(cfg.fetchJobs());
+        return fetcher;
     }
 
     /**

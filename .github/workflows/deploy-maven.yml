@@ -21,7 +21,7 @@ jobs:
 
       - name: Build submodules
         run: |
-          for module in netwatchz-spigot netwatchz-paper; do
+          for module in netwatchz-spigot netwatchz-paper netwatchz-velocity; do
             echo "Building $module..."
             mvn -pl $module -am clean package -DskipTests
           done
@@ -44,7 +44,7 @@ jobs:
 
       - name: Check if versions already exist and upload
         run: |
-          for module in netwatchz-spigot netwatchz-paper; do
+          for module in netwatchz-spigot netwatchz-paper netwatchz-velocity; do
             echo "Processing $module..."
 
             cd $module

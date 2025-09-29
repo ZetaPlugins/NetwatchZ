@@ -50,6 +50,12 @@ jobs:
           name: netwatchz-spigot-jar
           path: netwatchz-spigot/target/netwatchz-spigot-${{ github.event.release.tag_name }}.jar
 
+      - name: Upload Velocity JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: netwatchz-velocity-jar
+          path: netwatchz-velocity/target/netwatchz-velocity-${{ github.event.release.tag_name }}.jar
+
   upload_release_assets:
     needs: build
     runs-on: ubuntu-latest
@@ -66,12 +72,19 @@ jobs:
           name: netwatchz-spigot-jar
           path: netwatchz-spigot/target/
 
+      - name: Download Velocity JAR
+        uses: actions/download-artifact@v4
+        with:
+          name: netwatchz-velocity-jar
+          path: netwatchz-velocity/target/
+
       - name: Upload both JARs to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
             netwatchz-paper/target/netwatchz-paper-${{ github.event.release.tag_name }}.jar
             netwatchz-spigot/target/netwatchz-spigot-${{ github.event.release.tag_name }}.jar
+            netwatchz-velocity/target/netwatchz-velocity-${{ github.event.release.tag_name }}.jar
           body: ${{ github.event.release.body }}
 
   publish_modrinth_paper:
@@ -123,6 +136,35 @@ jobs:
           changelog: ${{ github.event.release.body }}
           files: '["netwatchz-spigot/target/netwatchz-spigot-${{ github.event.release.tag_name }}.jar"]'
           loaders: spigot
+          game-versions: |-
+            1.17.x
+            1.18.x
+            1.19.x
+            1.20.x
+            1.21.x
+          status: 'listed'
+          channel: 'release'
+
+  publish_modrinth_velocity:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Velocity JAR
+        uses: actions/download-artifact@v4
+        with:
+          name: netwatchz-velocity-jar
+          path: netwatchz-velocity/target/
+
+      - name: Publish Velocity to Modrinth
+        uses: cloudnode-pro/modrinth-publish@v2
+        with:
+          token: ${{ secrets.MODRINTH_TOKEN }}
+          project: 'pVji8xJW'
+          version: ${{ github.event.release.tag_name }}
+          name: 'Release ${{ github.event.release.tag_name }} Velocity'
+          changelog: ${{ github.event.release.body }}
+          files: '["netwatchz-velocity/target/netwatchz-velocity-${{ github.event.release.tag_name }}.jar"]'
+          loaders: velocity
           game-versions: |-
             1.17.x
             1.18.x

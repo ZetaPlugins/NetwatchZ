@@ -21,11 +21,14 @@ public final class VpnApi extends VpnInfoProvider {
     }
 
     @Override
-    protected VpnInfoData parseVpnData(String jsonResponse) throws ParseException {
+    protected VpnInfoData parseVpnData(String jsonResponse) throws ParseException, IllegalArgumentException {
         JSONParser parser = new JSONParser();
         JSONObject json = (JSONObject) parser.parse(jsonResponse);
 
-        System.out.println(json.toJSONString());
+        if (json.containsKey("message")) {
+            String message = (String) json.get("message");
+            throw new IllegalArgumentException("API returned an error message: " + message);
+        }
 
         JSONObject security = (JSONObject) json.get("security");
         if (security == null) {

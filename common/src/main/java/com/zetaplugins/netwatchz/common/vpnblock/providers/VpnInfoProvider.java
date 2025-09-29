@@ -70,7 +70,7 @@ public abstract class VpnInfoProvider {
             getCache().put(ip, data);
             return data;
         } catch (Exception e) {
-            throw new DataFetchException("Failed to fetch VPN data from " + getApiUrl() + ip, e);
+            throw new DataFetchException("Failed to fetch VPN data", e);
         }
     }
 
@@ -91,13 +91,17 @@ public abstract class VpnInfoProvider {
      */
     protected String fetchFromApi(URL url, Map<String, String> headers) throws IOException {
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-
         connection.setRequestMethod("GET");
 
         if (headers != null) {
             for (Map.Entry<String, String> header : headers.entrySet()) {
                 connection.setRequestProperty(header.getKey(), header.getValue());
             }
+        }
+
+        int statusCode = connection.getResponseCode();
+        if (statusCode != HttpURLConnection.HTTP_OK) {
+            throw new IOException("Failed to fetch data from " + url + ". HTTP status code: " + statusCode);
         }
 
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {

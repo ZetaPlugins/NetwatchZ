@@ -13,6 +13,7 @@
         <module>common</module>
         <module>netwatchz-spigot</module>
         <module>netwatchz-paper</module>
+        <module>netwatchz-velocity</module>
     </modules>
 
     <properties>

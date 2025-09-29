@@ -6,11 +6,11 @@
     <parent>
         <groupId>com.zetaplugins</groupId>
         <artifactId>NetwatchZ</artifactId>
-        <version>1.1.0</version>
+        <version>1.0.0</version>
     </parent>
 
     <artifactId>netwatchz-paper</artifactId>
-    <version>1.1.0</version>
+    <version>1.0.0</version>
     <packaging>jar</packaging>
 
     <name>NetwatchZ-Paper</name>
@@ -84,7 +84,7 @@
         <dependency>
             <groupId>com.zetaplugins.netwatchz</groupId>
             <artifactId>common</artifactId>
-            <version>1.1.0</version>
+            <version>1.0.0</version>
         </dependency>
         <dependency>
             <groupId>io.papermc.paper</groupId>

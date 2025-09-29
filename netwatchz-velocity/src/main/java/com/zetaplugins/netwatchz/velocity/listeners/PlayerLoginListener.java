@@ -7,7 +7,7 @@ import com.zetaplugins.netwatchz.common.NetwatchzServices;
 import com.zetaplugins.netwatchz.common.ipapi.IpData;
 import com.zetaplugins.netwatchz.common.vpnblock.VpnInfoData;
 import com.zetaplugins.netwatchz.velocity.util.VelocityConfigManager;
-import net.kyori.adventure.text.Component;
+import com.zetaplugins.netwatchz.velocity.util.VelocityMessageService;
 import org.slf4j.Logger;
 
 import java.net.InetSocketAddress;
@@ -19,21 +19,22 @@ public class PlayerLoginListener {
     private final NetwatchzServices services;
     private final Logger logger;
     private final VelocityConfigManager cfg;
+    private final VelocityMessageService msg;
 
-    public PlayerLoginListener(ProxyServer server, NetwatchzServices services, VelocityConfigManager cfg, Logger logger) {
+    public PlayerLoginListener(ProxyServer server, NetwatchzServices services, VelocityConfigManager cfg, Logger logger, VelocityMessageService msg) {
         this.server = server;
         this.services = services;
         this.logger = logger;
         this.cfg = cfg;
+        this.msg = msg;
     }
 
     @Subscribe
     public void onPreLogin(PreLoginEvent event) {
         InetSocketAddress address = event.getConnection().getRemoteAddress();
         String ip = address.getAddress().getHostAddress();
+//        String ip = "89.36.76.135";
         String playerName = event.getUsername();
-
-        logger.info("Player attempting to join from IP: {}", ip);
 
         if (handleIpListBlock(playerName, ip, event)) return;
         if (handleGeoBlock(playerName, ip, event)) return;
@@ -49,8 +50,12 @@ public class PlayerLoginListener {
 
         if ((mode.equals("blacklist") && isInList) || (mode.equals("whitelist") && !isInList)) {
             logger.info("Blocked {} due to IP list ({})", playerName, ip);
-            String msg = "Your IP address has been blocked by the server.";
-            event.setResult(PreLoginEvent.PreLoginComponentResult.denied(Component.text(msg)));
+
+            event.setResult(PreLoginEvent.PreLoginComponentResult.denied(msg.getAndFormatMsg(
+                    false,
+                    "iplist_ban_message",
+                    "&cYour IP address has been blocked due to suspicious activity!<br><br>&7If you believe this is an error, please contact support."
+            )));
             return true;
         }
 
@@ -75,8 +80,11 @@ public class PlayerLoginListener {
 
         if (blocked) {
             logger.info("Blocked {} due to geoblocking: {}", playerName, ipData.countryCode());
-            String msg = "You are not allowed to join from your country.";
-            event.setResult(PreLoginEvent.PreLoginComponentResult.denied(Component.text(msg)));
+            event.setResult(PreLoginEvent.PreLoginComponentResult.denied(msg.getAndFormatMsg(
+                    false,
+                    "geoblock_ban_message",
+                    "&cYour IP address has been blocked due to suspicious activity!<br><br>&7If you believe this is an error, please contact support."
+            )));
             return true;
         }
 
@@ -114,7 +122,11 @@ public class PlayerLoginListener {
         }
 
         if (shouldBlock) {
-            event.setResult(PreLoginEvent.PreLoginComponentResult.denied(Component.text("Your IP is associated with a VPN or proxy service.")));
+            event.setResult(PreLoginEvent.PreLoginComponentResult.denied(msg.getAndFormatMsg(
+                    false,
+                    "vpnblock_ban_message",
+                    "&cYour IP address has been blocked because it is associated with a VPN service!<br>Try disabling your VPN and reconnecting.<br><br>&7If you believe this is an error, please contact support."
+            )));
         }
     }
 }

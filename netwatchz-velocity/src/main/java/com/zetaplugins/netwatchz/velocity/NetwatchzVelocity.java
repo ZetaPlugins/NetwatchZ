@@ -15,12 +15,11 @@ import com.zetaplugins.netwatchz.common.iplist.IpListFetcher;
 import com.zetaplugins.netwatchz.common.iplist.IpListService;
 import com.zetaplugins.netwatchz.common.vpnblock.providers.VpnInfoProvider;
 import com.zetaplugins.netwatchz.velocity.listeners.PlayerLoginListener;
-import com.zetaplugins.netwatchz.velocity.util.ConfigInitializer;
-import com.zetaplugins.netwatchz.velocity.util.JulFromSlf4j;
-import com.zetaplugins.netwatchz.velocity.util.VelocityConfigManager;
+import com.zetaplugins.netwatchz.velocity.util.*;
 import org.slf4j.Logger;
 
 import java.nio.file.Path;
+import java.util.List;
 
 @Plugin(
     id = "netwatchz",
@@ -41,6 +40,14 @@ public class NetwatchzVelocity {
         new ConfigInitializer(logger, dataDirectory).initializeDefaultConfig();
         var configManager = new VelocityConfigManager(logger, dataDirectory);
 
+        var localizationService = new VelocityLocalizationService(
+            dataDirectory,
+            logger,
+            List.of("en-US", "de-DE"),
+            configManager.getString("lang", "en-US")
+        );
+        var messageSevice = new VelocityMessageService(localizationService);
+
         IpInfoProviderConfig ipInfoCfg = configManager.loadIpInfoProviderConfig();
         IpListConfig ipListCfg = configManager.loadIpListConfig();
         VpnBlockConfig vpnBlockCfg = configManager.loadVpnBlockConfig();
@@ -52,7 +59,10 @@ public class NetwatchzVelocity {
 
         var services = new NetwatchzServices(ipDataFetcher, ipListService, ipListFetcher, vpnInfoProvider);
 
-        server.getEventManager().register(this, new PlayerLoginListener(server, services, configManager, logger));
+        server.getEventManager().register(
+                this,
+                new PlayerLoginListener(server, services, configManager, logger, messageSevice)
+        );
 
         logger.info("NetwatchZ has been initialized!");
     }

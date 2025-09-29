@@ -1,0 +1,15 @@
+geoblock_ban_message: "&cDeine IP-Adresse wurde aufgrund verdächtiger Aktivitäten blockiert!<br><br>&7Wenn du glaubst, dass dies ein Fehler ist, kontaktiere bitte den Support."
+iplist_ban_message: "&cDeine IP-Adresse wurde aufgrund verdächtiger Aktivitäten blockiert!<br><br>&7Wenn du glaubst, dass dies ein Fehler ist, kontaktiere bitte den Support."
+vpnblock_ban_message: "&cDeine IP-Adresse wurde blockiert, da sie mit einem VPN-Dienst in Verbindung steht!<br>Versuche, dein VPN zu deaktivieren und erneut zu verbinden.<br><br>&7Wenn du glaubst, dass dies ein Fehler ist, kontaktiere bitte den Support."
+usage_error: "&cNutzung: %usage%"
+player_not_found: "&cSpieler nicht gefunden!"
+ip_data_fetch_error: "&cKonnte IP-Daten für %player% nicht abrufen!"
+ip_info: "<br>&8--- <gradient:#FF80AB:#D81B60>&lIP Informationen </gradient>&r&8---<br><br>
+<#FF80AB>Spieler: <click:copy_to_clipboard:%player%><hover:show_text:'&7Klicke, um in die Zwischenablage zu kopieren!'>&7%player%</hover></click><br>
+<#FF80AB>IP: <click:copy_to_clipboard:%ip%><hover:show_text:'&7Klicke, um in die Zwischenablage zu kopieren!'>&7%ip%</hover></click><br>
+<#FF80AB>Land: <click:copy_to_clipboard:%country%><hover:show_text:'&7Klicke, um in die Zwischenablage zu kopieren!'>&7%country%</hover></click><br>
+<#FF80AB>Region: <click:copy_to_clipboard:%region%><hover:show_text:'&7Klicke, um in die Zwischenablage zu kopieren!'>&7%region%</hover></click><br>
+<#FF80AB>ISP: <click:copy_to_clipboard:%isp%><hover:show_text:'&7Klicke, um in die Zwischenablage zu kopieren!'>&7%isp%</hover></click><br>
+<#FF80AB>Organisation: <click:copy_to_clipboard:%org%><hover:show_text:'&7Klicke, um in die Zwischenablage zu kopieren!'>&7%org%</hover></click><br>
+<#FF80AB>ASN: <click:copy_to_clipboard:%asn%><hover:show_text:'&7Klicke, um in die Zwischenablage zu kopieren!'>&7%asn%</hover></click><br><br>
+&8----------------------<br>"

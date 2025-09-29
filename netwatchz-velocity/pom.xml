@@ -14,7 +14,7 @@
     <version>1.0.0</version>
     <packaging>jar</packaging>
 
-    <name>netwatchz-velocity</name>
+    <name>NetwatchZ-Velocity</name>
 
     <properties>
         <java.version>17</java.version>

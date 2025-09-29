@@ -14,6 +14,7 @@ import com.zetaplugins.netwatchz.common.ipapi.fetchers.IpDataFetcher;
 import com.zetaplugins.netwatchz.common.iplist.IpListFetcher;
 import com.zetaplugins.netwatchz.common.iplist.IpListService;
 import com.zetaplugins.netwatchz.common.vpnblock.providers.VpnInfoProvider;
+import com.zetaplugins.netwatchz.velocity.commands.IpInfoCommand;
 import com.zetaplugins.netwatchz.velocity.listeners.PlayerLoginListener;
 import com.zetaplugins.netwatchz.velocity.util.*;
 import org.slf4j.Logger;
@@ -63,6 +64,8 @@ public class NetwatchzVelocity {
                 this,
                 new PlayerLoginListener(server, services, configManager, logger, messageSevice)
         );
+
+        server.getCommandManager().register("ipinfo", new IpInfoCommand(server, services, messageSevice));
 
         logger.info("NetwatchZ has been initialized!");
     }

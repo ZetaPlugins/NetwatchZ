@@ -214,3 +214,5 @@ If you need help with the setup of the plugin, or found a bug, you can join our 
 ---
 
 [![Usage](https://bstats.org/signatures/bukkit/NetwatchZ.svg)](https://bstats.org/plugin/bukkit/NetwatchZ/27376)
+
+[![Usage](https://bstats.org/signatures/velocity/NetwatchZ.svg)](https://bstats.org/plugin/velocity/NetwatchZ/27407)

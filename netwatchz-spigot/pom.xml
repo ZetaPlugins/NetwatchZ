@@ -6,11 +6,11 @@
     <parent>
         <groupId>com.zetaplugins</groupId>
         <artifactId>NetwatchZ</artifactId>
-        <version>1.1.0</version>
+        <version>1.1.1</version>
     </parent>
 
     <artifactId>netwatchz-spigot</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.1</version>
     <packaging>jar</packaging>
 
     <name>NetwatchZ-Spigot</name>
@@ -84,7 +84,7 @@
         <dependency>
             <groupId>com.zetaplugins.netwatchz</groupId>
             <artifactId>common</artifactId>
-            <version>1.1.0</version>
+            <version>1.1.1</version>
         </dependency>
         <dependency>
             <groupId>org.spigotmc</groupId>

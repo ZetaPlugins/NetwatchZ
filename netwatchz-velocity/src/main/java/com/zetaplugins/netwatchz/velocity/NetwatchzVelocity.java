@@ -7,6 +7,7 @@ import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.zetaplugins.netwatchz.common.NetwatchzServices;
+import com.zetaplugins.netwatchz.common.config.ConfigManager;
 import com.zetaplugins.netwatchz.common.config.IpInfoProviderConfig;
 import com.zetaplugins.netwatchz.common.config.IpListConfig;
 import com.zetaplugins.netwatchz.common.config.VpnBlockConfig;
@@ -35,6 +36,7 @@ public class NetwatchzVelocity {
     @Inject private Logger logger;
     @Inject private ProxyServer server;
     @Inject @DataDirectory private Path dataDirectory;
+    @Inject private Metrics.Factory metricsFactory;
 
     @Subscribe
     public void onProxyInitialization(ProxyInitializeEvent event) {
@@ -67,7 +69,18 @@ public class NetwatchzVelocity {
 
         server.getCommandManager().register("ipinfo", new IpInfoCommand(server, services, messageSevice));
 
+        initializeBStats(configManager);
+
         logger.info("NetwatchZ has been initialized!");
+    }
+
+    private void initializeBStats(VelocityConfigManager cfg) {
+        int pluginId = 27407;
+        Metrics metrics = metricsFactory.make(this, pluginId);
+
+        metrics.addCustomChart(new Metrics.SimplePie("ip_info_provider", () -> cfg.getString("ip_info_provider.provider", "ip-api")));
+        metrics.addCustomChart(new Metrics.SimplePie("geo_blocking_enabled", () -> cfg.getBoolean("geo_blocking.enabled", false) ? "true" : "false"));
+        metrics.addCustomChart(new Metrics.SimplePie("ip_list_enabled", () -> cfg.getBoolean("ip_list.enabled", true) ? "true" : "false"));
     }
 
 }

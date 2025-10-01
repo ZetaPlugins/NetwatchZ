@@ -1,0 +1,22 @@
+geoblock_ban_message: "&cВаш IP-адрес был заблокирован из-за подозрительной активности!<br><br>&7Если вы считаете, что это ошибка, пожалуйста, обратитесь в поддержку."
+iplist_ban_message: "&cВаш IP-адрес был заблокирован из-за подозрительной активности!<br><br>&7Если вы считаете, что это ошибка, пожалуйста, обратитесь в поддержку."
+vpnblock_ban_message: "&cВаш IP-адрес был заблокирован, так как он связан с VPN-сервисом!<br>Попробуйте отключить VPN и подключиться заново.<br><br>&7Если вы считаете, что это ошибка, пожалуйста, обратитесь в поддержку."
+usage_error: "&cИспользование: %usage%"
+player_not_found: "&cИгрок не найден!"
+ip_data_fetch_error: "&cНе удалось получить данные об IP для игрока %player%!"
+ip_info: "<br>&8--- <gradient:#FF80AB:#D81B60>&lИнформация об IP </gradient>&r&8---<br><br>
+<#FF80AB>Игрок: <click:copy_to_clipboard:%player%><hover:show_text:'&7Нажмите, чтобы скопировать'>&7%player%</hover></click><br>
+<#FF80AB>IP: <click:copy_to_clipboard:%ip%><hover:show_text:'&7Нажмите, чтобы скопировать'>&7%ip%</hover></click><br>
+<#FF80AB>Страна: <click:copy_to_clipboard:%country%><hover:show_text:'&7Нажмите, чтобы скопировать'>&7%country%</hover></click><br>
+<#FF80AB>Регион: <click:copy_to_clipboard:%region%><hover:show_text:'&7Нажмите, чтобы скопировать'>&7%region%</hover></click><br>
+<#FF80AB>Провайдер (ISP): <click:copy_to_clipboard:%isp%><hover:show_text:'&7Нажмите, чтобы скопировать'>&7%isp%</hover></click><br>
+<#FF80AB>Организация: <click:copy_to_clipboard:%org%><hover:show_text:'&7Нажмите, чтобы скопировать'>&7%org%</hover></click><br>
+<#FF80AB>ASN: <click:copy_to_clipboard:%asn%><hover:show_text:'&7Нажмите, чтобы скопировать'>&7%asn%</hover></click><br><br>
+&8----------------------<br>"
+debug_usage: "&cИспользование: /%command% <upload | generate>"
+debug_no_permission: "&cУ вас нет прав на использование этой команды!"
+debug_file_create_success: "&8 [&a✔&8] &7Данные отладки сохранены в следующие файлы:<br><click:COPY_TO_CLIPBOARD:%jsonPath%><#8b73f6>%jsonPath%</click><br><click:COPY_TO_CLIPBOARD:%txtPath%><#8b73f6>%txtPath%</click>"
+debug_failed_to_create_file: "&cНе удалось создать файл отчёта: %error%"
+debug_upload_confirm: "<br><#8b73f6>&lЗагрузка Отчёта об Отладке&r<br><br>&7 Вы уверены, что хотите загрузить отчёт? Подтверждая, вы принимаете нашу <u><click:OPEN_URL:https://debug.zetaplugins.com/privacy>Политику Конфиденциальности</click></u>.<br><br>&8 <#8b73f6><click:RUN_COMMAND:%command%>[Нажмите Здесь]</click> &r&8или введите <u>%command%</u><br>"
+debug_upload_failed: "&cНе удалось загрузить отчёт: %error%"
+debug_upload_success: "&8 [&a✔&8] &7Отчёт об отладке успешно загружен! Вы можете просмотреть его здесь:<br>&8 <u><#8b73f6><click:OPEN_URL:%url%>%url%</click></u><br>"
